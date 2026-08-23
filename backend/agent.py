@@ -28,8 +28,11 @@ def run_pipeline(mode: str | None = None) -> dict:
               f"{len(w.transactions)} outgoing payments")
 
     verdicts = []
+    trusted = datalayer.trusted_pairs()
+    if trusted:
+        audit.log("load_trusted_accounts", f"{len(trusted)} owner-verified pairs", "loaded")
     for inv in w.invoices:
-        v = fraud.verify(inv, w.history_invoices, w.transactions)
+        v = fraud.verify(inv, w.history_invoices, w.transactions, trusted)
         verdicts.append(v)
         audit.log("verify_invoice",
                   f"{inv.id} {inv.supplier_name} -> {inv.account_id[-6:]}",

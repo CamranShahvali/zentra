@@ -34,6 +34,8 @@ OP_PSU_CORPORATE_ID = os.getenv("OP_PSU_CORPORATE_ID", "4007314497")
 DATA_MODE = os.getenv("DATA_MODE", "hybrid")  # live | seed | hybrid
 SEED_DIR = ROOT / "backend" / "seed"
 AUDIT_LOG = ROOT / "audit.jsonl"
+RUNTIME_INVOICES = ROOT / ".runtime_invoices.json"   # invoices added via the UI
+TRUSTED_ACCOUNTS = ROOT / ".trusted_accounts.json"   # owner-verified (orgnr, account) pairs
 
 # --- LLM ---
 LLM_BACKEND = os.getenv("LLM_BACKEND", "claude-code")  # claude-code | none

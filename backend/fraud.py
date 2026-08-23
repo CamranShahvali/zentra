@@ -46,6 +46,7 @@ def verify(
     invoice: Invoice,
     history: list[Invoice],
     transactions: list[Transaction],
+    trusted: frozenset[tuple[str, str]] = frozenset(),
 ) -> Verdict:
     if not invoice.supplier_orgnr:
         return Verdict(
@@ -54,6 +55,15 @@ def verify(
             reason="Supplier has no organisation number on the invoice — "
                    "payment account cannot be verified against history.",
             evidence={"supplier_name": invoice.supplier_name},
+        )
+
+    if (invoice.supplier_orgnr, invoice.account_norm) in trusted:
+        return Verdict(
+            invoice_id=invoice.id,
+            status="CLEAR",
+            reason="Account manually verified by you — trusted after direct contact "
+                   "with the supplier.",
+            evidence={"account": invoice.account_norm, "trusted_by_owner": True},
         )
 
     known, bank_hits = _known_accounts(invoice.supplier_orgnr, history, transactions)
@@ -101,5 +111,6 @@ def screen_all(
     invoices: list[Invoice],
     history: list[Invoice],
     transactions: list[Transaction],
+    trusted: frozenset[tuple[str, str]] = frozenset(),
 ) -> list[Verdict]:
-    return [verify(inv, history, transactions) for inv in invoices]
+    return [verify(inv, history, transactions, trusted) for inv in invoices]

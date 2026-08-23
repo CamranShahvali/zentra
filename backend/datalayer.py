@@ -90,10 +90,33 @@ def _merge_live(w: World) -> World:
 def get_world(mode: str | None = None) -> World:
     mode = mode or config.DATA_MODE
     if mode == "seed":
-        return _seed_world()
-    if mode in ("hybrid", "live"):
-        return _merge_live(_seed_world())
-    raise ValueError(f"unknown DATA_MODE {mode!r}")
+        w = _seed_world()
+    elif mode in ("hybrid", "live"):
+        w = _merge_live(_seed_world())
+    else:
+        raise ValueError(f"unknown DATA_MODE {mode!r}")
+    # runtime overlay: invoices added through the UI (any mode)
+    if config.RUNTIME_INVOICES.exists():
+        try:
+            extra = [Invoice(**d) for d in json.loads(config.RUNTIME_INVOICES.read_text())]
+            have = {i.id for i in w.invoices}
+            w.invoices.extend(i for i in extra if i.id not in have)
+            if extra:
+                w.sources["runtime_invoices"] = f"{len(extra)} added via UI"
+        except Exception as e:
+            w.sources["runtime_invoices_error"] = str(e)[:150]
+    return w
+
+
+def trusted_pairs() -> frozenset[tuple[str, str]]:
+    """Owner-verified (orgnr, normalised account) pairs."""
+    if not config.TRUSTED_ACCOUNTS.exists():
+        return frozenset()
+    try:
+        rows = json.loads(config.TRUSTED_ACCOUNTS.read_text())
+        return frozenset((r["orgnr"], r["account"]) for r in rows)
+    except Exception:
+        return frozenset()
 
 
 if __name__ == "__main__":

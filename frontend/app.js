@@ -1,156 +1,389 @@
-/* Zentra frontend — fetch, render, navigate. No framework, no build step. */
+/* Zentra admin board — vanilla JS, no build step. */
 
 const $ = (id) => document.getElementById(id);
 const sek = (n) =>
   new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 0 }).format(Math.round(n)) + " SEK";
-const shortAcct = (a) => (a && a.length > 10 ? a.slice(0, 4) + " …" + a.slice(-6) : a || "—");
+const shortAcct = (a) => (a && a.length > 12 ? a.slice(0, 4) + " …" + a.slice(-6) : a || "—");
+const fmtDate = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+};
 
 let DATA = null;
 
+/* ---------- navigation ---------- */
+function show(page) {
+  document.querySelectorAll(".page").forEach((p) => p.classList.remove("active"));
+  $("page-" + page).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach((n) =>
+    n.classList.toggle("active", n.dataset.page === page)
+  );
+  window.scrollTo({ top: 0, behavior: "instant" });
+  if (page === "log") refreshAudit();
+  if (page === "connections") refreshConnections();
+}
+document.querySelectorAll(".nav-item").forEach((n) =>
+  n.addEventListener("click", () => show(n.dataset.page))
+);
+
+/* ---------- load ---------- */
 async function load() {
   const r = await fetch("/api/briefing");
   DATA = await r.json();
-  renderBriefing();
-  renderSignoff();
+  renderOverview();
+  renderInvoices();
+  renderPayments();
+  renderCustomers();
 }
 
-/* ---------- navigation ---------- */
-function show(name) {
-  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
-  $("screen-" + name).classList.add("active");
-  document.querySelectorAll(".crumb").forEach((c) =>
-    c.classList.toggle("active", c.dataset.screen === name)
-  );
-  window.scrollTo({ top: 0, behavior: "instant" });
-}
-document.querySelectorAll(".crumb").forEach((c) =>
-  c.addEventListener("click", () => !c.disabled && show(c.dataset.screen))
-);
-
-/* ---------- screen 1 ---------- */
-function renderBriefing() {
+/* ---------- overview ---------- */
+function renderOverview() {
   const d = new Date(DATA.today + "T08:00:00");
-  $("date-line").textContent =
-    d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) +
-    " · 08:00";
-  $("briefing-text").textContent = DATA.briefing;
-  $("author-chip").textContent =
-    DATA.briefing_author === "claude" ? "written by the agent" : "deterministic briefing";
+  $("ov-date").textContent = d.toLocaleDateString("en-GB", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+  $("ov-balance").textContent = sek(DATA.balance);
+  $("ov-account").textContent = "Företagskonto · SEB";
+  $("ov-due").textContent = sek(DATA.totals.due_sum);
+  $("ov-due-sub").textContent = DATA.totals.due_count + " supplier invoices";
+  $("ov-low").textContent = sek(DATA.projection.planned.min_balance);
 
-  $("stat-balance").textContent = sek(DATA.balance);
-  $("stat-naive").textContent = sek(DATA.projection.naive.min_balance);
-  $("stat-planned").textContent = sek(DATA.projection.planned.min_balance);
-  $("stat-planned-sub").textContent =
-    "lowest projected balance · buffer floor " + sek(DATA.projection.buffer_floor);
+  $("ov-briefing").textContent = DATA.briefing;
+  $("ov-author").textContent =
+    DATA.briefing_author === "claude" ? "written by the agent" : "generated";
 
   if (DATA.held.length) {
     const h = DATA.held[0];
-    const inv = h.invoice;
     const known = (h.evidence.known_accounts || [{}])[0];
-    $("hold-card").hidden = false;
-    $("hold-supplier").textContent = inv.supplier_name;
-    $("hold-amount").textContent = sek(inv.amount);
-    $("hold-line").textContent =
-      `Paid ${known.times_paid} times to the same account since ${String(known.first_seen || "").slice(0, 7)}. ` +
-      `This invoice names a different account — first seen today. Held until you verify by phone.`;
-    $("crumb-evidence").disabled = false;
+    $("ov-held").textContent = sek(DATA.totals.held_sum);
+    $("nav-alerts").hidden = false;
+    $("nav-alerts").textContent = DATA.held.length;
+    $("ov-alert").hidden = false;
+    $("ov-alert-title").textContent = h.invoice.supplier_name;
+    $("ov-alert-sub").textContent =
+      `paid ${known.times_paid}× to one account since ${String(known.first_seen || "").slice(0, 7)} — this invoice names a new one`;
+    $("ov-alert-amount").textContent = sek(h.invoice.amount);
+    $("ov-alert-open").onclick = () => openDetail(h.invoice.id);
+  } else {
+    $("ov-held").textContent = "0 SEK";
   }
 
-  const list = $("cleared-list");
-  list.innerHTML = "";
-  DATA.cleared.forEach((c) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <span class="tick">✓</span>
-      <span>
-        <div class="li-name">${c.invoice.supplier_name}</div>
-        <div class="li-note">${c.verdict.reason}</div>
-      </span>
-      <span class="li-date">${c.pay_date}</span>
-      <span class="li-amount">${sek(c.invoice.amount)}</span>`;
-    list.appendChild(li);
+  renderChart();
+  renderUpcoming();
+}
+
+function renderChart() {
+  const el = $("cash-chart");
+  el.innerHTML = "";
+  const planned = DATA.projection.planned.series;
+  const naive = DATA.projection.naive.series;
+  const floor = DATA.projection.buffer_floor;
+  const maxv = Math.max(...planned.map((p) => p.balance), ...naive.map((p) => p.balance), floor) * 1.08;
+
+  const floorLine = document.createElement("div");
+  floorLine.className = "floor-line";
+  floorLine.style.bottom = (floor / maxv) * 100 + "%";
+  el.appendChild(floorLine);
+
+  planned.forEach((p, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "bar-wrap";
+    const n = naive[i];
+    const nb = document.createElement("div");
+    nb.className = "bar naive" + (n.balance < floor ? " under" : "");
+    nb.style.height = Math.max((n.balance / maxv) * 100, 2) + "%";
+    nb.title = `${p.date} · everything today: ${sek(n.balance)}`;
+    const pb = document.createElement("div");
+    pb.className = "bar";
+    pb.style.height = Math.max((p.balance / maxv) * 100, 2) + "%";
+    pb.title = `${p.date} · planned: ${sek(p.balance)}`;
+    wrap.appendChild(pb);
+    wrap.appendChild(nb);
+    el.appendChild(wrap);
   });
-  $("cleared-count").textContent = DATA.cleared.length;
-
-  renderEvidence();
 }
 
-/* ---------- screen 2 ---------- */
-function renderEvidence() {
-  if (!DATA.held.length) return;
-  const h = DATA.held[0];
-  const inv = h.invoice;
-  const ev = h.evidence;
-  const known = (ev.known_accounts || [{}])[0];
+function renderUpcoming() {
+  const ul = $("ov-upcoming");
+  ul.innerHTML = "";
+  const events = [];
+  DATA.obligations.forEach((o) =>
+    events.push({ date: o.due_date, what: o.name, amt: -o.amount })
+  );
+  DATA.projection.inflows.forEach((i) =>
+    events.push({
+      date: i.date,
+      what: `${i.customer} — expected (avg ${i.avg_lateness_days} days late)`,
+      amt: i.amount,
+    })
+  );
+  events.sort((a, b) => a.date.localeCompare(b.date));
+  events.slice(0, 6).forEach((e) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="up-date">${fmtDate(e.date)}</span>
+      <span class="up-what">${e.what}</span>
+      <span class="up-amt ${e.amt > 0 ? "in" : ""}">${e.amt > 0 ? "+" : "−"}${sek(Math.abs(e.amt))}</span>`;
+    ul.appendChild(li);
+  });
+}
 
-  $("ev-title").textContent = inv.supplier_name;
-  $("ev-supplier").textContent = inv.supplier_name;
-  $("ev-orgnr").textContent = inv.supplier_orgnr || "—";
-  $("ev-amount").textContent = sek(inv.amount);
-  $("ev-due").textContent = inv.due_date;
-  $("ev-new-acct").textContent = shortAcct(ev.new_account_display || ev.new_account);
-  $("ev-times").textContent = known.times_paid;
-  $("ev-known-acct").textContent = shortAcct(known.account);
-  $("ev-range").textContent =
-    `${String(known.first_seen || "").slice(0, 7)} → ${String(known.last_seen || "").slice(0, 7)}`;
-  $("ev-verdict").textContent = " " + h.reason;
-  $("ev-bankline").textContent =
-    `${ev.bank_confirmed_payments} of them confirmed in the bank's own outgoing transaction history — ` +
-    `the books claim, the bank proves.`;
+/* ---------- invoices table ---------- */
+function allRows() {
+  const held = DATA.held.map((h) => ({
+    kind: "hold", inv: h.invoice, verdict: h, pay_date: null,
+  }));
+  const review = DATA.review.map((h) => ({
+    kind: "review", inv: h.invoice, verdict: h, pay_date: null,
+  }));
+  const cleared = DATA.cleared.map((c) => ({
+    kind: "ok", inv: c.invoice, verdict: c.verdict, pay_date: c.pay_date, reason: c.reason,
+  }));
+  return [...held, ...review, ...cleared];
+}
 
-  const strip = $("tx-strip");
-  strip.innerHTML = "";
-  for (let i = 0; i < (known.times_paid || 0); i++) {
-    const cell = document.createElement("span");
-    cell.className = "tx-cell" + (i % 5 === 4 ? " big" : "");
-    strip.appendChild(cell);
+function renderInvoices() {
+  const tb = document.querySelector("#inv-table tbody");
+  tb.innerHTML = "";
+  allRows().forEach((r) => {
+    const tr = document.createElement("tr");
+    if (r.kind === "hold") tr.className = "held";
+    const chip =
+      r.kind === "hold"
+        ? `<span class="status-chip hold">HELD</span>`
+        : r.kind === "review"
+        ? `<span class="status-chip review">REVIEW</span>`
+        : `<span class="status-chip ok">VERIFIED</span>`;
+    const verif =
+      r.kind === "hold"
+        ? `<span class="verif-note bad">account never seen for this supplier</span>`
+        : r.kind === "review"
+        ? `<span class="verif-note">no org. number — cannot verify</span>`
+        : `<span class="verif-note">${(r.verdict.evidence && r.verdict.evidence.times_paid) || ""}${r.verdict.evidence && r.verdict.evidence.times_paid ? "× to this account" : "verified against history"}</span>`;
+    tr.innerHTML = `
+      <td>${chip}</td>
+      <td><b>${r.inv.supplier_name}</b><div class="verif-note">${r.inv.supplier_orgnr || ""}</div></td>
+      <td>${r.inv.reference || r.inv.id}</td>
+      <td>${fmtDate(r.inv.due_date)}</td>
+      <td class="num">${sek(r.inv.amount)}</td>
+      <td class="acct-mono">${shortAcct(r.inv.account_id)}</td>
+      <td>${verif}</td>`;
+    tr.addEventListener("click", () => openDetail(r.inv.id));
+    tb.appendChild(tr);
+  });
+}
+
+/* ---------- invoice detail ---------- */
+function openDetail(invoiceId) {
+  const r = allRows().find((x) => x.inv.id === invoiceId);
+  if (!r) return;
+  const inv = r.inv;
+  const ev = (r.verdict && r.verdict.evidence) || {};
+
+  $("dt-title").textContent = inv.supplier_name;
+  $("dt-supplier").textContent = inv.supplier_name;
+  $("dt-orgnr").textContent = inv.supplier_orgnr || "—";
+  $("dt-ref").textContent = inv.reference || inv.id;
+  $("dt-issued").textContent = fmtDate(inv.issue_date);
+  $("dt-due").textContent = fmtDate(inv.due_date);
+  $("dt-amount").textContent = sek(inv.amount);
+
+  const flag = $("dt-flag");
+  const isHold = r.kind === "hold";
+  flag.textContent = isHold ? "HELD" : r.kind === "review" ? "REVIEW" : "VERIFIED";
+  flag.className = "flag big" + (isHold ? "" : " clear");
+
+  const newAcctRow = $("dt-new-acct").parentElement;
+  $("dt-new-acct").textContent = shortAcct(inv.account_id);
+  newAcctRow.className = "kv acct " + (isHold ? "new" : "known");
+  $("dt-firstseen").textContent = isHold ? "account first seen today" : "";
+
+  const known = (ev.known_accounts || [])[0] || {};
+  if (isHold) {
+    $("dt-times").textContent = known.times_paid || "—";
+    $("dt-known-acct").textContent = shortAcct(known.account);
+    $("dt-range").textContent =
+      `${String(known.first_seen || "").slice(0, 7)} → ${String(known.last_seen || "").slice(0, 7)}`;
+    $("dt-bankline").textContent =
+      `${ev.bank_confirmed_payments || known.times_paid} of them confirmed in the bank's own outgoing transactions — the books claim, the bank proves.`;
+  } else {
+    $("dt-times").textContent = ev.times_paid || "—";
+    $("dt-known-acct").textContent = shortAcct(inv.account_id);
+    $("dt-range").textContent =
+      `${String(ev.first_seen || "").slice(0, 7)} → ${String(ev.last_seen || "").slice(0, 7)}`;
+    $("dt-bankline").textContent = "Account matches the payment history for this supplier.";
   }
-}
 
-/* ---------- screen 3 ---------- */
-function renderSignoff() {
+  const strip = $("dt-strip");
+  strip.innerHTML = "";
+  const n = (isHold ? known.times_paid : ev.times_paid) || 0;
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement("span");
+    c.className = "tx-cell" + (i % 5 === 4 ? " big" : "");
+    strip.appendChild(c);
+  }
+
+  $("dt-status").textContent = flag.textContent;
+  $("dt-reason").textContent = " " + (r.verdict.reason || "");
+  $("dt-verdict-bar").style.background = isHold ? "var(--ink)" : "#1d3311";
+  $("dt-regline").style.display = isHold ? "" : "none";
+
+  // trust action: only for held invoices with an orgnr
+  const tb = $("dt-trustbar");
+  if (isHold && inv.supplier_orgnr) {
+    tb.hidden = false;
+    const btn = $("dt-trust-btn");
+    btn.disabled = false;
+    btn.textContent = "I verified — trust this account";
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.textContent = "Recording…";
+      await fetch("/api/trust", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgnr: inv.supplier_orgnr, account: inv.account_id }),
+      });
+      await load();               // re-screen everything
+      openDetail(inv.id);         // re-render this invoice — now VERIFIED
+    };
+  } else {
+    tb.hidden = true;
+  }
+
+  show("detail");
+  document.querySelectorAll(".nav-item").forEach((n) =>
+    n.classList.toggle("active", n.dataset.page === "invoices")
+  );
+}
+$("detail-back").addEventListener("click", () => show("invoices"));
+
+/* ---------- payments ---------- */
+function renderPayments() {
   const today = DATA.cleared.filter((c) => c.pay_date === DATA.today);
   const later = DATA.cleared.filter((c) => c.pay_date !== DATA.today);
-
-  const fill = (elId, rows, showDate) => {
-    const ul = $(elId);
+  const fill = (id, rows, showDate) => {
+    const ul = $(id);
     ul.innerHTML = "";
     rows.forEach((c) => {
       const li = document.createElement("li");
       li.innerHTML = `
         <span>
-          <div class="li-name">${c.invoice.supplier_name}</div>
-          <div class="li-note">${c.reason}</div>
+          <div class="row-name">${c.invoice.supplier_name}</div>
+          <div class="row-note">${c.reason}</div>
         </span>
-        ${showDate ? `<span class="li-date">${c.pay_date}</span>` : ""}
-        <span class="li-amount">${sek(c.invoice.amount)}</span>`;
+        <span class="row-right">
+          <div class="row-amt">${sek(c.invoice.amount)}</div>
+          ${showDate ? `<div class="row-date">${fmtDate(c.pay_date)}</div>` : ""}
+        </span>`;
       ul.appendChild(li);
     });
   };
-  fill("plan-today", today, false);
-  fill("plan-later", later, true);
-  $("today-count").textContent = today.length;
-  $("later-count").textContent = later.length;
-  $("basket-total").textContent = sek(today.reduce((s, c) => s + c.invoice.amount, 0));
-  $("basket-count").textContent = `${today.length} payments · one signature`;
+  fill("pay-today", today, false);
+  fill("pay-later", later, true);
+  $("pay-today-count").textContent = today.length;
+  $("pay-later-count").textContent = later.length;
+  $("bk-count").textContent = today.length + " payments";
+  $("bk-total").textContent = sek(today.reduce((s, c) => s + c.invoice.amount, 0));
 }
 
-$("to-signoff").addEventListener("click", () => show("signoff"));
-$("open-evidence").addEventListener("click", () => show("evidence"));
-
 $("stage-btn").addEventListener("click", async () => {
-  $("stage-btn").disabled = true;
-  $("stage-btn").textContent = "Staging…";
+  const btn = $("stage-btn");
+  btn.disabled = true;
+  btn.textContent = "Staging…";
   const r = await fetch("/api/basket", { method: "POST" });
   const b = await r.json();
-  $("basket-result").hidden = false;
-  $("basket-id").textContent = b.basket_id;
-  $("basket-status").textContent = b.status;
-  $("stage-btn").textContent = "Staged ✓";
-  refreshAudit();
+  $("bk-result").hidden = false;
+  $("bk-id").textContent = b.basket_id;
+  $("bk-status").textContent = b.status;
+  btn.textContent = "Staged ✓";
 });
 
-/* ---------- audit drawer ---------- */
+/* ---------- customers ---------- */
+function renderCustomers() {
+  const tb = $("cust-body");
+  tb.innerHTML = "";
+  DATA.projection.inflows.forEach((i) => {
+    const tr = document.createElement("tr");
+    const late = i.avg_lateness_days;
+    tr.innerHTML = `
+      <td><b>${i.customer}</b></td>
+      <td class="num">${sek(i.amount)}</td>
+      <td>${fmtDate(DATA.today)}</td>
+      <td>${fmtDate(i.date)}</td>
+      <td><span class="habit ${late > 5 ? "late" : "ontime"}">${
+        late > 0 ? `avg ${late} days late` : "pays on time"
+      }</span></td>`;
+    tb.appendChild(tr);
+  });
+  if (!DATA.projection.inflows.length) {
+    tb.innerHTML = `<tr><td colspan="5" class="muted">No outstanding receivables.</td></tr>`;
+  }
+}
+
+/* ---------- connections ---------- */
+async function refreshConnections() {
+  try {
+    const r = await fetch("/api/connections");
+    const c = await r.json();
+    const zg = $("conn-zg");
+    zg.textContent = c.zwapgrid.connected ? "CONNECTED" : c.zwapgrid.pending ? "WAITING FOR APPROVAL" : "NOT CONNECTED";
+    zg.className = "conn-status " + (c.zwapgrid.connected ? "on" : c.zwapgrid.pending ? "wait" : "");
+    $("conn-zg-id").textContent = c.zwapgrid.consent_id
+      ? c.zwapgrid.consent_id.slice(0, 8) + "…" : "—";
+    $("conn-zg-btn").textContent = c.zwapgrid.connected ? "Reconnect" : "Connect bookkeeping";
+
+    const op = $("conn-op");
+    op.textContent = c.openpayments.connected ? "CONNECTED" : c.openpayments.pending ? "WAITING FOR SCA" : "NOT CONNECTED";
+    op.className = "conn-status " + (c.openpayments.connected ? "on" : c.openpayments.pending ? "wait" : "");
+  } catch (e) { /* leave defaults */ }
+}
+
+$("conn-zg-btn").addEventListener("click", async () => {
+  $("conn-zg-btn").disabled = true;
+  $("conn-zg-btn").textContent = "Creating consent…";
+  const r = await fetch("/api/connections/zwapgrid", { method: "POST" });
+  const d = await r.json();
+  $("conn-zg-btn").disabled = false;
+  if (d.onboarding_url) {
+    $("conn-zg-hint").hidden = false;
+    window.open(d.onboarding_url, "_blank");
+    $("conn-zg-btn").textContent = "Approval page opened ↗";
+    pollZg();
+  } else {
+    $("conn-zg-btn").textContent = "Failed — retry";
+  }
+});
+
+async function pollZg() {
+  for (let i = 0; i < 60; i++) {
+    await new Promise((res) => setTimeout(res, 5000));
+    await refreshConnections();
+    if ($("conn-zg").classList.contains("on")) return;
+  }
+}
+
+$("conn-op-btn").addEventListener("click", async () => {
+  $("conn-op-btn").disabled = true;
+  $("conn-op-btn").textContent = "Creating bank consent…";
+  const r = await fetch("/api/connections/openpayments", { method: "POST" });
+  const d = await r.json();
+  $("conn-op-btn").disabled = false;
+  const hint = $("conn-op-hint");
+  hint.hidden = false;
+  if (d.sca_url) {
+    hint.innerHTML = `Bank approval page opened in a new tab. Approve there, then come back.`;
+    window.open(d.sca_url, "_blank");
+    $("conn-op-btn").textContent = "Approval page opened ↗";
+  } else if (d.connected) {
+    hint.textContent = "Connected — no user approval required by this sandbox bank.";
+  } else {
+    hint.textContent = d.detail || "The sandbox did not return an approval link — see Agent log.";
+    $("conn-op-btn").textContent = "Retry";
+  }
+  refreshConnections();
+});
+
+/* ---------- audit ---------- */
 async function refreshAudit() {
   const r = await fetch("/api/audit");
   const { entries } = await r.json();
@@ -158,14 +391,63 @@ async function refreshAudit() {
   ul.innerHTML = "";
   entries.forEach((e) => {
     const li = document.createElement("li");
-    li.innerHTML = `<span class="t">${e.ts.slice(11)}</span> <span class="tool">${e.tool}</span> ${e.args} <span class="r">→ ${e.result}</span>`;
+    li.innerHTML = `<span class="t">${e.ts.slice(11)}</span> <span class="tool">${e.tool}</span> ${e.args} → ${e.result}`;
     ul.appendChild(li);
   });
 }
-$("audit-toggle").addEventListener("click", async () => {
-  await refreshAudit();
-  $("drawer").classList.add("open");
+
+/* ---------- new invoice form ---------- */
+$("new-invoice-btn").addEventListener("click", async () => {
+  const form = $("new-invoice-form");
+  form.hidden = !form.hidden;
+  if (!form.hidden) {
+    $("f-due").value = DATA ? DATA.today : "";
+    try {
+      const r = await fetch("/api/suppliers");
+      const { suppliers } = await r.json();
+      const dl = $("supplier-list");
+      dl.innerHTML = "";
+      suppliers.forEach((s) => {
+        const o = document.createElement("option");
+        o.value = s.name;
+        o.dataset.orgnr = s.orgnr || "";
+        dl.appendChild(o);
+      });
+      $("f-supplier").onchange = () => {
+        const hit = [...dl.options].find((o) => o.value === $("f-supplier").value);
+        if (hit && hit.dataset.orgnr) $("f-orgnr").value = hit.dataset.orgnr;
+      };
+    } catch (e) {}
+  }
 });
-$("drawer-close").addEventListener("click", () => $("drawer").classList.remove("open"));
+$("f-cancel").addEventListener("click", () => ($("new-invoice-form").hidden = true));
+$("f-submit").addEventListener("click", async () => {
+  const msg = $("f-msg");
+  msg.textContent = "";
+  const payload = {
+    supplier_name: $("f-supplier").value,
+    supplier_orgnr: $("f-orgnr").value,
+    amount: parseFloat($("f-amount").value || "0"),
+    due_date: $("f-due").value,
+    reference: $("f-ref").value,
+    account_id: $("f-account").value,
+  };
+  const r = await fetch("/api/invoices", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const d = await r.json();
+  if (!r.ok) {
+    msg.textContent = d.detail || "check the fields";
+    return;
+  }
+  msg.textContent = "Registered — screening…";
+  await load(); // re-run pipeline: the new invoice screens like any other
+  $("new-invoice-form").hidden = true;
+  ["f-supplier","f-orgnr","f-amount","f-ref","f-account"].forEach((id) => ($(id).value = ""));
+  show("invoices");
+  if (allRows().find((x) => x.inv.id === d.id)) openDetail(d.id);
+});
 
 load();
