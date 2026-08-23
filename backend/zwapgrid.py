@@ -31,20 +31,40 @@ def _client() -> httpx.Client:
 # ---------- consent lifecycle ----------
 
 def create_consent(name: str = "Zentra Build Day") -> dict:
-    """Create a consent; returns {id, otc, onboarding_url} and caches it."""
+    """Create a consent; returns {id, otc, onboarding_url} and caches it.
+
+    Live behaviour (verified 2026-08-23): POST returns 201 with an EMPTY body,
+    so we find the new consent via the list endpoint (newest first by createdOn).
+    """
     with _client() as c:
         r = c.post(f"{config.ZG_CONSENTS_BASE}/consents", json={"name": name})
         r.raise_for_status()
-        data = r.json()
-    consent_id = data.get("id") or data.get("consentId") or (data.get("data") or {}).get("id")
-    otc = data.get("otc") or data.get("oneTimeCode") or (data.get("data") or {}).get("otc")
-    if consent_id and not otc:
-        otc = get_otc(consent_id)
+        data = {}
+        if r.content:
+            try:
+                data = r.json()
+            except Exception:
+                data = {}
+    consent_id = data.get("id") or data.get("consentId") or (data.get("data") or {}).get("id") \
+        if isinstance(data, dict) else None
+    if not consent_id:
+        loc = r.headers.get("Location") or r.headers.get("location") or ""
+        if loc:
+            consent_id = loc.rstrip("/").split("/")[-1]
+    if not consent_id:
+        with _client() as c:
+            lr = c.get(f"{config.ZG_CONSENTS_BASE}/consents")
+            lr.raise_for_status()
+            rows = (lr.json().get("data")) or []
+        mine = [x for x in rows if x.get("name") == name]
+        mine.sort(key=lambda x: x.get("createdOn") or "", reverse=True)
+        consent_id = mine[0]["id"] if mine else None
+    otc = get_otc(consent_id) if consent_id else None
     info = {
         "id": consent_id,
         "otc": otc,
         "onboarding_url": onboarding_url(consent_id, otc) if consent_id and otc else None,
-        "raw": data,
+        "raw": data if isinstance(data, dict) else {},
     }
     config.ZG_CONSENT_CACHE.write_text(json.dumps(info, indent=1))
     return info
@@ -58,7 +78,7 @@ def get_otc(consent_id: str) -> str | None:
         if r.status_code >= 400:
             return None
         data = r.json()
-    return data.get("otc") or data.get("oneTimeCode") or data.get("code") or (
+    return data.get("code") or data.get("otc") or data.get("oneTimeCode") or (
         data if isinstance(data, str) else None)
 
 
