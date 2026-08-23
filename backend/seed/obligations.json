@@ -1,0 +1,12 @@
+[
+ {
+  "name": "Skattekonto: moms + arbetsgivaravgifter",
+  "amount": 84000.0,
+  "due_date": "2026-08-27"
+ },
+ {
+  "name": "Salaries (6 employees)",
+  "amount": 182000.0,
+  "due_date": "2026-09-25"
+ }
+]

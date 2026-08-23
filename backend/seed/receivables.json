@@ -1,0 +1,101 @@
+[
+ {
+  "id": "SO-EL-01",
+  "customer_name": "Elgiganten AB",
+  "amount": 89000.0,
+  "currency": "SEK",
+  "due_date": "2025-11-06",
+  "paid_date": "2025-11-26",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-02",
+  "customer_name": "Elgiganten AB",
+  "amount": 90000.0,
+  "currency": "SEK",
+  "due_date": "2025-12-06",
+  "paid_date": "2025-12-27",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-03",
+  "customer_name": "Elgiganten AB",
+  "amount": 91000.0,
+  "currency": "SEK",
+  "due_date": "2026-01-06",
+  "paid_date": "2026-01-28",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-04",
+  "customer_name": "Elgiganten AB",
+  "amount": 92000.0,
+  "currency": "SEK",
+  "due_date": "2026-02-06",
+  "paid_date": "2026-03-01",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-05",
+  "customer_name": "Elgiganten AB",
+  "amount": 93000.0,
+  "currency": "SEK",
+  "due_date": "2026-03-06",
+  "paid_date": "2026-03-30",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-06",
+  "customer_name": "Elgiganten AB",
+  "amount": 94000.0,
+  "currency": "SEK",
+  "due_date": "2026-04-06",
+  "paid_date": "2026-04-28",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-07",
+  "customer_name": "Elgiganten AB",
+  "amount": 95000.0,
+  "currency": "SEK",
+  "due_date": "2026-05-06",
+  "paid_date": "2026-05-27",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-08",
+  "customer_name": "Elgiganten AB",
+  "amount": 96000.0,
+  "currency": "SEK",
+  "due_date": "2026-06-06",
+  "paid_date": "2026-06-29",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-09",
+  "customer_name": "Elgiganten AB",
+  "amount": 97000.0,
+  "currency": "SEK",
+  "due_date": "2026-07-06",
+  "paid_date": "2026-07-28",
+  "source": "seed"
+ },
+ {
+  "id": "SO-EL-10",
+  "customer_name": "Elgiganten AB",
+  "amount": 96000.0,
+  "currency": "SEK",
+  "due_date": "2026-08-06",
+  "paid_date": null,
+  "source": "seed"
+ },
+ {
+  "id": "SO-CO-01",
+  "customer_name": "Coor Service Management AB",
+  "amount": 54000.0,
+  "currency": "SEK",
+  "due_date": "2026-08-10",
+  "paid_date": "2026-08-11",
+  "source": "seed"
+ }
+]

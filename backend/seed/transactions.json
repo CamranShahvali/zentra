@@ -1,0 +1,702 @@
+[
+ {
+  "id": "TX-00001",
+  "booking_date": "2026-05-20",
+  "amount": -6200.0,
+  "currency": "SEK",
+  "creditor_name": "Hygienpartner Nord AB",
+  "creditor_account": "SE2880000832790000012345",
+  "creditor_orgnr": "556811-2340",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00002",
+  "booking_date": "2026-06-20",
+  "amount": -6200.0,
+  "currency": "SEK",
+  "creditor_name": "Hygienpartner Nord AB",
+  "creditor_account": "SE2880000832790000012345",
+  "creditor_orgnr": "556811-2340",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00003",
+  "booking_date": "2026-07-20",
+  "amount": -6200.0,
+  "currency": "SEK",
+  "creditor_name": "Hygienpartner Nord AB",
+  "creditor_account": "SE2880000832790000012345",
+  "creditor_orgnr": "556811-2340",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00004",
+  "booking_date": "2026-05-20",
+  "amount": -5000.0,
+  "currency": "SEK",
+  "creditor_name": "Lokalhyra Slussen Fastigheter AB",
+  "creditor_account": "SE3550000000054910001003",
+  "creditor_orgnr": "556455-7811",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00005",
+  "booking_date": "2026-06-20",
+  "amount": -5000.0,
+  "currency": "SEK",
+  "creditor_name": "Lokalhyra Slussen Fastigheter AB",
+  "creditor_account": "SE3550000000054910001003",
+  "creditor_orgnr": "556455-7811",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00006",
+  "booking_date": "2026-07-20",
+  "amount": -5000.0,
+  "currency": "SEK",
+  "creditor_name": "Lokalhyra Slussen Fastigheter AB",
+  "creditor_account": "SE3550000000054910001003",
+  "creditor_orgnr": "556455-7811",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00007",
+  "booking_date": "2026-05-20",
+  "amount": -4800.0,
+  "currency": "SEK",
+  "creditor_name": "Städmaskiner Sverige AB",
+  "creditor_account": "SE7160000000000012377101",
+  "creditor_orgnr": "556690-4471",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00008",
+  "booking_date": "2026-06-20",
+  "amount": -4800.0,
+  "currency": "SEK",
+  "creditor_name": "Städmaskiner Sverige AB",
+  "creditor_account": "SE7160000000000012377101",
+  "creditor_orgnr": "556690-4471",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00009",
+  "booking_date": "2026-07-20",
+  "amount": -4800.0,
+  "currency": "SEK",
+  "creditor_name": "Städmaskiner Sverige AB",
+  "creditor_account": "SE7160000000000012377101",
+  "creditor_orgnr": "556690-4471",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00010",
+  "booking_date": "2026-05-20",
+  "amount": -3400.0,
+  "currency": "SEK",
+  "creditor_name": "Arbetskläder Direkt AB",
+  "creditor_account": "SE1412000000012340005678",
+  "creditor_orgnr": "559012-8834",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00011",
+  "booking_date": "2026-06-20",
+  "amount": -3400.0,
+  "currency": "SEK",
+  "creditor_name": "Arbetskläder Direkt AB",
+  "creditor_account": "SE1412000000012340005678",
+  "creditor_orgnr": "559012-8834",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00012",
+  "booking_date": "2026-07-20",
+  "amount": -3400.0,
+  "currency": "SEK",
+  "creditor_name": "Arbetskläder Direkt AB",
+  "creditor_account": "SE1412000000012340005678",
+  "creditor_orgnr": "559012-8834",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00013",
+  "booking_date": "2026-05-20",
+  "amount": -2900.0,
+  "currency": "SEK",
+  "creditor_name": "Kontorsservice Väst AB",
+  "creditor_account": "SE9350000000005401234567",
+  "creditor_orgnr": "556733-9022",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00014",
+  "booking_date": "2026-06-20",
+  "amount": -2900.0,
+  "currency": "SEK",
+  "creditor_name": "Kontorsservice Väst AB",
+  "creditor_account": "SE9350000000005401234567",
+  "creditor_orgnr": "556733-9022",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00015",
+  "booking_date": "2026-07-20",
+  "amount": -2900.0,
+  "currency": "SEK",
+  "creditor_name": "Kontorsservice Väst AB",
+  "creditor_account": "SE9350000000005401234567",
+  "creditor_orgnr": "556733-9022",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00016",
+  "booking_date": "2026-05-20",
+  "amount": -7300.0,
+  "currency": "SEK",
+  "creditor_name": "Fordonsleasing Stockholm AB",
+  "creditor_account": "SE6980000000123400112233",
+  "creditor_orgnr": "556520-1188",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00017",
+  "booking_date": "2026-06-20",
+  "amount": -7300.0,
+  "currency": "SEK",
+  "creditor_name": "Fordonsleasing Stockholm AB",
+  "creditor_account": "SE6980000000123400112233",
+  "creditor_orgnr": "556520-1188",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00018",
+  "booking_date": "2026-07-20",
+  "amount": -7300.0,
+  "currency": "SEK",
+  "creditor_name": "Fordonsleasing Stockholm AB",
+  "creditor_account": "SE6980000000123400112233",
+  "creditor_orgnr": "556520-1188",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00019",
+  "booking_date": "2026-05-20",
+  "amount": -5100.0,
+  "currency": "SEK",
+  "creditor_name": "Försäkringsbolaget Trygg AB",
+  "creditor_account": "SE8160000000000998877665",
+  "creditor_orgnr": "516401-6770",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00020",
+  "booking_date": "2026-06-20",
+  "amount": -5100.0,
+  "currency": "SEK",
+  "creditor_name": "Försäkringsbolaget Trygg AB",
+  "creditor_account": "SE8160000000000998877665",
+  "creditor_orgnr": "516401-6770",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00021",
+  "booking_date": "2026-07-20",
+  "amount": -5100.0,
+  "currency": "SEK",
+  "creditor_name": "Försäkringsbolaget Trygg AB",
+  "creditor_account": "SE8160000000000998877665",
+  "creditor_orgnr": "516401-6770",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00022",
+  "booking_date": "2026-05-20",
+  "amount": -2600.0,
+  "currency": "SEK",
+  "creditor_name": "Telefoni & IT Norden AB",
+  "creditor_account": "SE2412000000013579024680",
+  "creditor_orgnr": "559233-4150",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00023",
+  "booking_date": "2026-06-20",
+  "amount": -2600.0,
+  "currency": "SEK",
+  "creditor_name": "Telefoni & IT Norden AB",
+  "creditor_account": "SE2412000000013579024680",
+  "creditor_orgnr": "559233-4150",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00024",
+  "booking_date": "2026-07-20",
+  "amount": -2600.0,
+  "currency": "SEK",
+  "creditor_name": "Telefoni & IT Norden AB",
+  "creditor_account": "SE2412000000013579024680",
+  "creditor_orgnr": "559233-4150",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00025",
+  "booking_date": "2026-05-20",
+  "amount": -4700.0,
+  "currency": "SEK",
+  "creditor_name": "Bränsle & Energi Sverige AB",
+  "creditor_account": "SE5550000000012345098765",
+  "creditor_orgnr": "556602-7789",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00026",
+  "booking_date": "2026-06-20",
+  "amount": -4700.0,
+  "currency": "SEK",
+  "creditor_name": "Bränsle & Energi Sverige AB",
+  "creditor_account": "SE5550000000012345098765",
+  "creditor_orgnr": "556602-7789",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00027",
+  "booking_date": "2026-07-20",
+  "amount": -4700.0,
+  "currency": "SEK",
+  "creditor_name": "Bränsle & Energi Sverige AB",
+  "creditor_account": "SE5550000000012345098765",
+  "creditor_orgnr": "556602-7789",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00028",
+  "booking_date": "2026-05-20",
+  "amount": -4500.0,
+  "currency": "SEK",
+  "creditor_name": "Marknadsföring Digital AB",
+  "creditor_account": "SE7280000832790112233445",
+  "creditor_orgnr": "559108-6612",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00029",
+  "booking_date": "2026-06-20",
+  "amount": -4500.0,
+  "currency": "SEK",
+  "creditor_name": "Marknadsföring Digital AB",
+  "creditor_account": "SE7280000832790112233445",
+  "creditor_orgnr": "559108-6612",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00030",
+  "booking_date": "2026-07-20",
+  "amount": -4500.0,
+  "currency": "SEK",
+  "creditor_name": "Marknadsföring Digital AB",
+  "creditor_account": "SE7280000832790112233445",
+  "creditor_orgnr": "559108-6612",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00031",
+  "booking_date": "2026-05-20",
+  "amount": -6000.0,
+  "currency": "SEK",
+  "creditor_name": "Redovisningsbyrån Siffror AB",
+  "creditor_account": "SE4160000000000112358132",
+  "creditor_orgnr": "556940-2201",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00032",
+  "booking_date": "2026-06-20",
+  "amount": -6000.0,
+  "currency": "SEK",
+  "creditor_name": "Redovisningsbyrån Siffror AB",
+  "creditor_account": "SE4160000000000112358132",
+  "creditor_orgnr": "556940-2201",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00033",
+  "booking_date": "2026-07-20",
+  "amount": -6000.0,
+  "currency": "SEK",
+  "creditor_name": "Redovisningsbyrån Siffror AB",
+  "creditor_account": "SE4160000000000112358132",
+  "creditor_orgnr": "556940-2201",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00034",
+  "booking_date": "2026-05-20",
+  "amount": -3500.0,
+  "currency": "SEK",
+  "creditor_name": "Grossist Rengöring AB",
+  "creditor_account": "SE9912000000098765432100",
+  "creditor_orgnr": "556877-5566",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00035",
+  "booking_date": "2026-06-20",
+  "amount": -3500.0,
+  "currency": "SEK",
+  "creditor_name": "Grossist Rengöring AB",
+  "creditor_account": "SE9912000000098765432100",
+  "creditor_orgnr": "556877-5566",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00036",
+  "booking_date": "2026-07-20",
+  "amount": -3500.0,
+  "currency": "SEK",
+  "creditor_name": "Grossist Rengöring AB",
+  "creditor_account": "SE9912000000098765432100",
+  "creditor_orgnr": "556877-5566",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00037",
+  "booking_date": "2026-05-20",
+  "amount": -4000.0,
+  "currency": "SEK",
+  "creditor_name": "Kaffe & Kontor Norden AB",
+  "creditor_account": "SE3350000000009876501234",
+  "creditor_orgnr": "559350-9977",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00038",
+  "booking_date": "2026-06-20",
+  "amount": -4000.0,
+  "currency": "SEK",
+  "creditor_name": "Kaffe & Kontor Norden AB",
+  "creditor_account": "SE3350000000009876501234",
+  "creditor_orgnr": "559350-9977",
+  "source": "seed"
+ },
+ {
+  "id": "TX-00039",
+  "booking_date": "2026-07-20",
+  "amount": -4000.0,
+  "currency": "SEK",
+  "creditor_name": "Kaffe & Kontor Norden AB",
+  "creditor_account": "SE3350000000009876501234",
+  "creditor_orgnr": "559350-9977",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-01",
+  "booking_date": "2024-01-28",
+  "amount": -38000.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-02",
+  "booking_date": "2024-02-26",
+  "amount": -38811.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-03",
+  "booking_date": "2024-03-28",
+  "amount": -39622.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-04",
+  "booking_date": "2024-04-28",
+  "amount": -40433.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-05",
+  "booking_date": "2024-05-28",
+  "amount": -41244.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-06",
+  "booking_date": "2024-06-28",
+  "amount": -42055.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-07",
+  "booking_date": "2024-07-28",
+  "amount": -42866.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-08",
+  "booking_date": "2024-08-28",
+  "amount": -43677.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-09",
+  "booking_date": "2024-09-28",
+  "amount": -44488.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-10",
+  "booking_date": "2024-10-28",
+  "amount": -45299.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-11",
+  "booking_date": "2024-11-28",
+  "amount": -46110.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-12",
+  "booking_date": "2024-12-28",
+  "amount": -46921.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-13",
+  "booking_date": "2025-01-28",
+  "amount": -47732.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-14",
+  "booking_date": "2025-02-26",
+  "amount": -48543.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-15",
+  "booking_date": "2025-03-28",
+  "amount": -49354.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-16",
+  "booking_date": "2025-04-28",
+  "amount": -50165.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-17",
+  "booking_date": "2025-05-28",
+  "amount": -50976.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-18",
+  "booking_date": "2025-06-28",
+  "amount": -51787.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-19",
+  "booking_date": "2025-07-28",
+  "amount": -38598.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-20",
+  "booking_date": "2025-08-28",
+  "amount": -39409.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-21",
+  "booking_date": "2025-09-28",
+  "amount": -40220.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-22",
+  "booking_date": "2025-10-28",
+  "amount": -41031.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-23",
+  "booking_date": "2025-11-28",
+  "amount": -41842.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-24",
+  "booking_date": "2025-12-28",
+  "amount": -42653.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-25",
+  "booking_date": "2026-01-28",
+  "amount": -43464.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-26",
+  "booking_date": "2026-02-26",
+  "amount": -44275.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-27",
+  "booking_date": "2026-03-28",
+  "amount": -45086.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-28",
+  "booking_date": "2026-04-28",
+  "amount": -45897.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-29",
+  "booking_date": "2026-05-28",
+  "amount": -46708.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-30",
+  "booking_date": "2026-06-28",
+  "amount": -47519.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SG-31",
+  "booking_date": "2026-07-28",
+  "amount": -48330.0,
+  "currency": "SEK",
+  "creditor_name": "Städgrossisten AB",
+  "creditor_account": "SE4550000000005839825",
+  "creditor_orgnr": "556677-8899",
+  "source": "seed"
+ }
+]

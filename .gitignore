@@ -1,0 +1,9 @@
+.env
+.token_cache.json
+.zg_consent.json
+.venv/
+__pycache__/
+*.pyc
+audit.jsonl
+*.log
+node_modules/
