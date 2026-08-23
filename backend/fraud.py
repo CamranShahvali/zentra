@@ -15,7 +15,7 @@ from .models import Invoice, Transaction, Verdict, _norm_account
 
 
 def _known_accounts(
-    orgnr: str,
+    orgnr_norm: str,
     history: list[Invoice],
     transactions: list[Transaction],
 ) -> tuple[dict[str, dict], int]:
@@ -30,11 +30,11 @@ def _known_accounts(
 
     bank_hits = 0
     for t in transactions:
-        if t.creditor_orgnr == orgnr and t.account_norm:
+        if t.orgnr_norm == orgnr_norm and t.account_norm:
             bump(t.account_norm, t.booking_date)
             bank_hits += 1
     for inv in history:
-        if inv.supplier_orgnr == orgnr and inv.account_norm:
+        if inv.orgnr_norm == orgnr_norm and inv.account_norm:
             # history invoices corroborate but only count as payments when the
             # bank never saw them (weight 0 if account already bank-confirmed)
             if inv.account_norm not in acc:
@@ -57,7 +57,7 @@ def verify(
             evidence={"supplier_name": invoice.supplier_name},
         )
 
-    if (invoice.supplier_orgnr, invoice.account_norm) in trusted:
+    if (invoice.orgnr_norm, invoice.account_norm) in trusted:
         return Verdict(
             invoice_id=invoice.id,
             status="CLEAR",
@@ -66,7 +66,7 @@ def verify(
             evidence={"account": invoice.account_norm, "trusted_by_owner": True},
         )
 
-    known, bank_hits = _known_accounts(invoice.supplier_orgnr, history, transactions)
+    known, bank_hits = _known_accounts(invoice.orgnr_norm, history, transactions)
 
     if not known:
         return Verdict(

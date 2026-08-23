@@ -17,8 +17,12 @@ from . import audit, config, datalayer, fraud, planner
 
 
 def run_pipeline(mode: str | None = None) -> dict:
-    """Deterministic part: gather world -> screen -> plan. Fully audited."""
-    audit.clear()
+    """Deterministic part: gather world -> screen -> plan. Fully audited.
+
+    NOTE: never clears the audit log — it is append-only by design. A new
+    screening run is itself an auditable event.
+    """
+    audit.log("screening_run", f"mode={mode or config.DATA_MODE}", "pipeline started")
     w = datalayer.get_world(mode)
     audit.log("get_invoices", f"mode={mode or config.DATA_MODE}",
               f"{len(w.invoices)} due invoices, {len(w.history_invoices)} history")

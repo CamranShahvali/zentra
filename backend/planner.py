@@ -26,8 +26,8 @@ def customer_lateness(receivables: list[Receivable]) -> dict[str, float]:
 
 def expected_inflows(
     receivables: list[Receivable], today: date, horizon_days: int
-) -> list[tuple[date, float, str, float]]:
-    """(expected_date, amount, customer, lateness) for outstanding receivables in horizon."""
+) -> list[tuple[date, float, str, float, str]]:
+    """(expected_date, amount, customer, lateness, due_date) for outstanding receivables."""
     lateness = customer_lateness(receivables)
     out = []
     for r in receivables:
@@ -38,7 +38,7 @@ def expected_inflows(
         if expected < today:
             expected = today + timedelta(days=1)  # overdue: assume imminent, not past
         if expected <= today + timedelta(days=horizon_days):
-            out.append((expected, r.amount, r.customer_name, late))
+            out.append((expected, r.amount, r.customer_name, late, r.due_date))
     return sorted(out)
 
 
@@ -63,7 +63,7 @@ def plan(
             d = date.fromisoformat(ob.due_date)
             if today <= d <= horizon_end:
                 events[d] -= ob.amount
-        for d, amount, _c, _l in inflows:
+        for d, amount, _c, _l, _due in inflows:
             events[d] += amount
 
         bal = balance
@@ -114,7 +114,7 @@ def plan(
         for due, inv, target in candidates:
             if pay_dates[inv.id] == target:
                 continue
-            inflow_on_day = [(c, a) for d, a, c, _l in inflows if d == target]
+            inflow_on_day = [(c, a) for d, a, c, _l, _due in inflows if d == target]
             src = inflow_on_day[0] if inflow_on_day else ("expected inflow", 0)
             pay_dates[inv.id] = target
             reasons[inv.id] = (
@@ -126,6 +126,17 @@ def plan(
             break
 
     final_min, final_violation, final_series = simulate(pay_dates)
+    # honest shortfall reporting: if the floor (or zero) is still breached after
+    # planning, the UI must show it — pretending otherwise is how demos die.
+    shortfall = None
+    if final_violation is not None:
+        shortfall = {
+            "violation_date": final_violation.isoformat(),
+            "min_balance": round(final_min, 2),
+            "below_zero": final_min < 0,
+            "note": ("Even with optimal timing, planned outflows exceed available cash "
+                     "in this window. Zentra will not hide a shortfall."),
+        }
     items = [
         PlanItem(invoice_id=inv.id, pay_date=pay_dates[inv.id].isoformat(), reason=reasons[inv.id])
         for inv in sorted(invoices, key=lambda i: (pay_dates[i.id], i.due_date))
@@ -138,7 +149,9 @@ def plan(
                     "violation_date": final_violation.isoformat() if final_violation else None,
                     "series": final_series},
         "inflows": [{"date": d.isoformat(), "amount": a, "customer": c,
-                     "avg_lateness_days": round(l, 1)} for d, a, c, l in inflows],
+                     "avg_lateness_days": round(l, 1), "due_date": due}
+                    for d, a, c, l, due in inflows],
         "buffer_floor": buffer_floor,
+        "shortfall": shortfall,
     }
     return items, projection

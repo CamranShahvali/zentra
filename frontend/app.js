@@ -48,6 +48,17 @@ function renderOverview() {
   $("ov-due").textContent = sek(DATA.totals.due_sum);
   $("ov-due-sub").textContent = DATA.totals.due_count + " supplier invoices";
   $("ov-low").textContent = sek(DATA.projection.planned.min_balance);
+  const sf = DATA.projection.shortfall;
+  const lowStat = $("ov-low");
+  if (sf) {
+    lowStat.classList.add("danger");
+    $("ov-low-sub").textContent = sf.below_zero
+      ? "planned outflows exceed cash — shortfall shown, not hidden"
+      : "dips under your buffer even with optimal timing";
+  } else {
+    lowStat.classList.remove("danger");
+    $("ov-low-sub").textContent = "with Zentra's plan";
+  }
 
   $("ov-briefing").textContent = DATA.briefing;
   $("ov-author").textContent =
@@ -190,8 +201,9 @@ function openDetail(invoiceId) {
 
   const flag = $("dt-flag");
   const isHold = r.kind === "hold";
-  flag.textContent = isHold ? "HELD" : r.kind === "review" ? "REVIEW" : "VERIFIED";
-  flag.className = "flag big" + (isHold ? "" : " clear");
+  const isReview = r.kind === "review";
+  flag.textContent = isHold ? "HELD" : isReview ? "REVIEW" : "VERIFIED";
+  flag.className = "flag big" + (isHold ? "" : isReview ? " review" : " clear");
 
   const newAcctRow = $("dt-new-acct").parentElement;
   $("dt-new-acct").textContent = shortAcct(inv.account_id);
@@ -206,6 +218,12 @@ function openDetail(invoiceId) {
       `${String(known.first_seen || "").slice(0, 7)} → ${String(known.last_seen || "").slice(0, 7)}`;
     $("dt-bankline").textContent =
       `${ev.bank_confirmed_payments || known.times_paid} of them confirmed in the bank's own outgoing transactions — the books claim, the bank proves.`;
+  } else if (isReview) {
+    $("dt-times").textContent = "—";
+    $("dt-known-acct").textContent = "cannot match";
+    $("dt-range").textContent = "no org. number on the invoice";
+    $("dt-bankline").textContent =
+      "Without an organisation number the payment history cannot be matched. Add the supplier's org. number, or verify manually.";
   } else {
     $("dt-times").textContent = ev.times_paid || "—";
     $("dt-known-acct").textContent = shortAcct(inv.account_id);
@@ -315,7 +333,7 @@ function renderCustomers() {
     tr.innerHTML = `
       <td><b>${i.customer}</b></td>
       <td class="num">${sek(i.amount)}</td>
-      <td>${fmtDate(DATA.today)}</td>
+      <td>${fmtDate(i.due_date)}</td>
       <td>${fmtDate(i.date)}</td>
       <td><span class="habit ${late > 5 ? "late" : "ontime"}">${
         late > 0 ? `avg ${late} days late` : "pays on time"

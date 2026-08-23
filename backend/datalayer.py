@@ -109,12 +109,13 @@ def get_world(mode: str | None = None) -> World:
 
 
 def trusted_pairs() -> frozenset[tuple[str, str]]:
-    """Owner-verified (orgnr, normalised account) pairs."""
+    """Owner-verified (orgnr_norm, account_norm) pairs."""
+    from .models import _norm_account, _norm_orgnr
     if not config.TRUSTED_ACCOUNTS.exists():
         return frozenset()
     try:
         rows = json.loads(config.TRUSTED_ACCOUNTS.read_text())
-        return frozenset((r["orgnr"], r["account"]) for r in rows)
+        return frozenset((_norm_orgnr(r["orgnr"]), _norm_account(r["account"])) for r in rows)
     except Exception:
         return frozenset()
 

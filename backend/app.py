@@ -42,9 +42,18 @@ def get_briefing(refresh: bool = False, fast: bool = False):
     return _cache["briefing"]
 
 
+def _briefing_cached_or_fast() -> dict:
+    """Reuse the cached briefing; if absent, build WITHOUT the LLM (fast).
+    Action endpoints must never block a button on a 30s narration call."""
+    if not _cache["briefing"]:
+        _cache["briefing"] = agent.morning_briefing(use_llm=False)
+        _cache["at"] = time.time()
+    return _cache["briefing"]
+
+
 @app.get("/api/evidence/{invoice_id}")
 def get_evidence(invoice_id: str):
-    b = get_briefing()
+    b = _briefing_cached_or_fast()
     for group in ("held", "review"):
         for item in b[group]:
             if item["invoice_id"] == invoice_id:
@@ -58,7 +67,7 @@ def get_evidence(invoice_id: str):
 @app.post("/api/basket")
 def stage_basket():
     """Stage today's cleared payments as one batch. NEVER signs, never sends."""
-    b = get_briefing()
+    b = _briefing_cached_or_fast()
     today_items = [c for c in b["cleared"] if c["pay_date"] == b["today"]]
     payments = [
         {
@@ -239,7 +248,7 @@ def trust_account(payload: dict):
 @app.get("/api/suppliers")
 def list_suppliers():
     """Known suppliers (for the add-invoice form autofill)."""
-    b = get_briefing()
+    b = _briefing_cached_or_fast()
     seen = {}
     for group in (b["cleared"],):
         for c in group:
@@ -255,12 +264,14 @@ def list_suppliers():
 
 @app.post("/api/reset")
 def reset():
+    """Re-arm the demo scenario. Keeps the audit log (append-only) and records the reset."""
     _cache["briefing"] = None
     _baskets.clear()
-    audit.clear()
     for p in (config.RUNTIME_INVOICES, config.TRUSTED_ACCOUNTS):
         if p.exists():
             p.unlink()
+    audit.log("demo_reset", "runtime invoices + trusted accounts cleared",
+              "scenario re-armed; audit trail preserved")
     return {"ok": True}
 
 

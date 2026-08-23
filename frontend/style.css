@@ -115,6 +115,7 @@ h1 { font-weight: 900; font-size: 30px; letter-spacing: -0.8px; }
 .flag { background: var(--danger); color: #fff; font-weight: 900; font-size: 12px; letter-spacing: 1.2px; padding: 4px 11px; border-radius: 9999px; }
 .flag.big { font-size: 13px; padding: 5px 13px; }
 .flag.clear { background: #3e7a1e; }
+.flag.review { background: var(--warn-bg); color: #8a5a00; border: 1px solid var(--warn-line); }
 .alert-main { flex: 1; }
 .alert-title { font-weight: 700; font-size: 17px; }
 .alert-sub { font-size: 13.5px; color: var(--ink-2); margin-top: 2px; }

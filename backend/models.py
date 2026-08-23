@@ -15,6 +15,13 @@ def _norm_account(acc: str | None) -> str:
     return "".join(ch for ch in str(acc) if ch.isalnum()).upper()
 
 
+def _norm_orgnr(v: str | None) -> str:
+    """Normalise an org number to digits only: '556677-8899' == '5566778899'."""
+    if not v:
+        return ""
+    return "".join(ch for ch in str(v) if ch.isdigit())
+
+
 @dataclass
 class Invoice:
     id: str
@@ -32,6 +39,10 @@ class Invoice:
     @property
     def account_norm(self) -> str:
         return _norm_account(self.account_id)
+
+    @property
+    def orgnr_norm(self) -> str:
+        return _norm_orgnr(self.supplier_orgnr)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -54,6 +65,10 @@ class Transaction:
     @property
     def account_norm(self) -> str:
         return _norm_account(self.creditor_account)
+
+    @property
+    def orgnr_norm(self) -> str:
+        return _norm_orgnr(self.creditor_orgnr)
 
     def to_dict(self) -> dict:
         d = asdict(self)
