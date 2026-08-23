@@ -1,0 +1,32 @@
+{
+ "consentStatus": "received",
+ "consentId": "39c7901a-0bfb-41b8-84c2-82e92493d234",
+ "scaMethods": [
+  {
+   "authenticationType": "PUSH_OTP",
+   "authenticationMethodId": "mbid",
+   "name": "Mobilt BankID"
+  },
+  {
+   "authenticationType": "CHIP_OTP",
+   "authenticationMethodId": "digipass",
+   "name": "Digipass"
+  },
+  {
+   "authenticationType": "CHIP_OTP",
+   "authenticationMethodId": "bankid_on_card",
+   "name": "BankID on card"
+  }
+ ],
+ "_links": {
+  "self": {
+   "href": "/psd2/consent/v1/consents/39c7901a-0bfb-41b8-84c2-82e92493d234"
+  },
+  "status": {
+   "href": "/psd2/consent/v1/consents/39c7901a-0bfb-41b8-84c2-82e92493d234/status"
+  },
+  "startAuthorisation": {
+   "href": "/psd2/consent/v1/consents/39c7901a-0bfb-41b8-84c2-82e92493d234/authorisations"
+  }
+ }
+}

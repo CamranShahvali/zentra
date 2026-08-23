@@ -143,7 +143,7 @@ def briefing_llm(facts: str) -> str | None:
         proc = subprocess.run(
             [exe, "-p", "--model", "sonnet", "--max-turns", "1"],
             input=f"{SYSTEM_PROMPT}\n\nFACTS:\n{facts}\n\nWrite the briefing now.",
-            capture_output=True, text=True, timeout=90,
+            capture_output=True, text=True, timeout=60,
         )
         text = proc.stdout.strip()
         if proc.returncode == 0 and 200 < len(text) < 2000:
@@ -188,10 +188,10 @@ def briefing_template(r: dict) -> str:
     return held_txt + plan_txt + close
 
 
-def morning_briefing(mode: str | None = None) -> dict:
+def morning_briefing(mode: str | None = None, use_llm: bool = True) -> dict:
     r = run_pipeline(mode)
     facts = _facts_for_llm(r)
-    text = briefing_llm(facts)
+    text = briefing_llm(facts) if use_llm else None
     author = "claude"
     if not text:
         text = briefing_template(r)

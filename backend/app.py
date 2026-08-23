@@ -13,6 +13,14 @@ from . import agent, audit, config
 
 app = FastAPI(title="Zentra", version="0.1.0")
 
+
+@app.middleware("http")
+async def no_cache(request, call_next):
+    """Dev servers + browser caches are how demos die. Never cache."""
+    resp = await call_next(request)
+    resp.headers["Cache-Control"] = "no-store, must-revalidate"
+    return resp
+
 ROOT = config.ROOT
 FRONTEND = ROOT / "frontend"
 
@@ -21,7 +29,13 @@ _baskets: list[dict] = []
 
 
 @app.get("/api/briefing")
-def get_briefing(refresh: bool = False):
+def get_briefing(refresh: bool = False, fast: bool = False):
+    """fast=1 skips the LLM narration (template text) — used after UI actions so
+    re-screening is instant; the Claude-written text returns on a normal load."""
+    if fast:
+        _cache["briefing"] = agent.morning_briefing(use_llm=False)
+        _cache["at"] = time.time()
+        return _cache["briefing"]
     if refresh or not _cache["briefing"] or time.time() - _cache["at"] > 600:
         _cache["briefing"] = agent.morning_briefing()
         _cache["at"] = time.time()

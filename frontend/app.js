@@ -28,8 +28,8 @@ document.querySelectorAll(".nav-item").forEach((n) =>
 );
 
 /* ---------- load ---------- */
-async function load() {
-  const r = await fetch("/api/briefing");
+async function load(fast = false) {
+  const r = await fetch("/api/briefing" + (fast ? "?fast=1" : ""));
   DATA = await r.json();
   renderOverview();
   renderInvoices();
@@ -238,13 +238,20 @@ function openDetail(invoiceId) {
     btn.onclick = async () => {
       btn.disabled = true;
       btn.textContent = "Recording…";
-      await fetch("/api/trust", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orgnr: inv.supplier_orgnr, account: inv.account_id }),
-      });
-      await load();               // re-screen everything
-      openDetail(inv.id);         // re-render this invoice — now VERIFIED
+      try {
+        const resp = await fetch("/api/trust", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orgnr: inv.supplier_orgnr, account: inv.account_id }),
+        });
+        if (!resp.ok) throw new Error("trust failed: " + resp.status);
+        btn.textContent = "Re-screening…";
+        await load(true);           // fast re-screen — no LLM, instant
+        openDetail(inv.id);         // re-render this invoice — now VERIFIED
+      } catch (e) {
+        btn.textContent = "Failed — retry";
+        btn.disabled = false;
+      }
     };
   } else {
     tb.hidden = true;
@@ -423,6 +430,7 @@ $("new-invoice-btn").addEventListener("click", async () => {
 $("f-cancel").addEventListener("click", () => ($("new-invoice-form").hidden = true));
 $("f-submit").addEventListener("click", async () => {
   const msg = $("f-msg");
+  const btn = $("f-submit");
   msg.textContent = "";
   const payload = {
     supplier_name: $("f-supplier").value,
@@ -432,22 +440,30 @@ $("f-submit").addEventListener("click", async () => {
     reference: $("f-ref").value,
     account_id: $("f-account").value,
   };
-  const r = await fetch("/api/invoices", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const d = await r.json();
-  if (!r.ok) {
-    msg.textContent = d.detail || "check the fields";
-    return;
+  btn.disabled = true;
+  btn.textContent = "Screening…";
+  try {
+    const r = await fetch("/api/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      msg.textContent = d.detail || "check the fields";
+      return;
+    }
+    await load(true); // fast re-screen — the new invoice verifies instantly
+    $("new-invoice-form").hidden = true;
+    ["f-supplier","f-orgnr","f-amount","f-ref","f-account"].forEach((id) => ($(id).value = ""));
+    show("invoices");
+    if (allRows().find((x) => x.inv.id === d.id)) openDetail(d.id);
+  } catch (e) {
+    msg.textContent = "Request failed — retry";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Register & screen";
   }
-  msg.textContent = "Registered — screening…";
-  await load(); // re-run pipeline: the new invoice screens like any other
-  $("new-invoice-form").hidden = true;
-  ["f-supplier","f-orgnr","f-amount","f-ref","f-account"].forEach((id) => ($(id).value = ""));
-  show("invoices");
-  if (allRows().find((x) => x.inv.id === d.id)) openDetail(d.id);
 });
 
 load();
