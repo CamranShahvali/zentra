@@ -5,11 +5,11 @@ import json
 import time
 import uuid
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import agent, audit, config
+from . import agent, audit, config, datalayer, extras
 
 app = FastAPI(title="Zentra", version="0.1.0")
 
@@ -260,6 +260,89 @@ def list_suppliers():
         seen.setdefault(i["supplier_orgnr"] or i["supplier_name"],
                         {"name": i["supplier_name"], "orgnr": i["supplier_orgnr"]})
     return {"suppliers": sorted(seen.values(), key=lambda s: s["name"])}
+
+
+# ---------- notes / pause / payroll / report / upload / assistant ----------
+
+@app.post("/api/invoices/{invoice_id}/notes")
+def add_note(invoice_id: str, payload: dict):
+    text = str(payload.get("text", "")).strip()
+    if not text:
+        return JSONResponse({"detail": "empty note"}, status_code=422)
+    entry = datalayer.add_invoice_note(invoice_id, text)
+    audit.log("add_note", invoice_id, text[:100])
+    _cache["briefing"] = None
+    return entry
+
+
+@app.post("/api/suppliers/pause")
+def pause_supplier(payload: dict):
+    orgnr = str(payload.get("orgnr", "")).strip()
+    if not orgnr:
+        return JSONResponse({"detail": "orgnr required"}, status_code=422)
+    paused = bool(payload.get("paused", True))
+    reason = str(payload.get("reason", "")).strip()
+    flag = datalayer.set_supplier_paused(orgnr, paused, reason)
+    audit.log("pause_supplier" if paused else "resume_supplier",
+              f"orgnr={orgnr}", reason or "no reason given")
+    _cache["briefing"] = None
+    return flag
+
+
+@app.post("/api/payroll/trust")
+def trust_salary_account(payload: dict):
+    """Owner attests an employee's new salary account after direct contact."""
+    import json as _json
+    from .models import _norm_account, _norm_orgnr
+    emp_id = str(payload.get("employee_id", "")).strip()
+    account = _norm_account(payload.get("account", ""))
+    if not emp_id or not account:
+        return JSONResponse({"detail": "employee_id and account required"}, status_code=422)
+    rows = []
+    if config.TRUSTED_ACCOUNTS.exists():
+        rows = _json.loads(config.TRUSTED_ACCOUNTS.read_text())
+    key = _norm_orgnr(emp_id)
+    if not any(_norm_orgnr(r["orgnr"]) == key and _norm_account(r["account"]) == account for r in rows):
+        rows.append({"orgnr": emp_id, "account": account,
+                     "verified_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                     "verified_by": "owner", "kind": "payroll"})
+    config.TRUSTED_ACCOUNTS.write_text(_json.dumps(rows, indent=1))
+    audit.log("trust_salary_account", f"employee={emp_id} account=…{account[-6:]}",
+              "owner confirmed with employee directly — account trusted for payroll")
+    _cache["briefing"] = None
+    return {"trusted": True}
+
+
+@app.get("/api/report/{year}/{month}")
+def get_report(year: int, month: int, narrate: bool = False):
+    b = _briefing_cached_or_fast()
+    rep = extras.month_report(b, year, month)
+    if narrate:
+        rep["narrative"] = extras.month_report_text(rep)
+    return rep
+
+
+@app.post("/api/upload")
+async def upload_invoice(file: UploadFile = File(...)):
+    data = await file.read()
+    if len(data) > 5_000_000:
+        return JSONResponse({"detail": "file too large (max 5MB)"}, status_code=413)
+    return extras.extract_invoice(data, file.filename or "upload.pdf")
+
+
+@app.post("/api/assistant")
+def assistant(payload: dict):
+    q = str(payload.get("question", "")).strip()
+    if not q:
+        return JSONResponse({"detail": "question required"}, status_code=422)
+    b = _briefing_cached_or_fast()
+    return extras.assistant_reply(q, b)
+
+
+@app.get("/api/validate")
+def validate():
+    w = datalayer.get_world()
+    return datalayer.validate_world(w)
 
 
 @app.post("/api/reset")

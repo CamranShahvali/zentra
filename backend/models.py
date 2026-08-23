@@ -103,6 +103,31 @@ class Obligation:
 
 
 @dataclass
+class Employee:
+    """Payroll: an employee, their salary, and the account on file."""
+    id: str                 # personnummer-style identifier
+    name: str
+    role: str
+    monthly_salary: float
+    account_id: str         # account currently on file (HR system)
+    account_changed_at: str | None = None  # when the on-file account last changed
+    source: Literal["live", "seed"] = "seed"
+
+    @property
+    def account_norm(self) -> str:
+        return _norm_account(self.account_id)
+
+    @property
+    def id_norm(self) -> str:
+        return _norm_orgnr(self.id)
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["account_norm"] = self.account_norm
+        return d
+
+
+@dataclass
 class Verdict:
     invoice_id: str
     status: Literal["CLEAR", "HOLD", "REVIEW"]

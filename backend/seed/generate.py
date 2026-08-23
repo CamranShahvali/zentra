@@ -44,6 +44,26 @@ SUPPLIERS = [
 
 STADGROSSISTEN = ("Städgrossisten AB", "556677-8899")
 
+# --- payroll: 6 employees, sum 182,000/month (matches the salaries obligation) ---
+# Jonas changed his on-file account TODAY (after this morning's payroll ran):
+# 18 salary payments say ...7301; the new account has never been paid.
+EMPLOYEES = [
+    # (personnummer-ish id, name, role, salary, hist_account, current_account, changed_at)
+    ("19860412-2398", "Anna Lindqvist", "Owner / operations", 35000,
+     "SE2850000000054400001111", "SE2850000000054400001111", None),
+    ("19910305-4412", "Jonas Bergström", "Team lead", 32000,
+     "SE4550000000058300007301", "SE7130000000009944882216", "2026-08-25"),
+    ("19880922-1157", "Maria Kowalczyk", "Cleaner", 31500,
+     "SE1250000000012340002222", "SE1250000000012340002222", None),
+    ("19950714-3388", "Erik Sandberg", "Cleaner", 30000,
+     "SE9850000000067890003333", "SE9850000000067890003333", None),
+    ("19930228-5501", "Fatima Al-Rashid", "Cleaner", 28500,
+     "SE3350000000045670004444", "SE3350000000045670004444", None),
+    ("19990106-7724", "Lucas Öberg", "Cleaner (part-time)", 25000,
+     "SE6650000000078900005555", "SE6650000000078900005555", None),
+]
+assert sum(e[3] for e in EMPLOYEES) == 182000
+
 
 def month_iter(start_y, start_m, n):
     y, m = start_y, start_m
@@ -162,16 +182,40 @@ def gen_obligations():
     ]
 
 
+def gen_employees():
+    return [{
+        "id": pid, "name": name, "role": role, "monthly_salary": float(sal),
+        "account_id": cur, "account_changed_at": changed, "source": "seed",
+    } for pid, name, role, sal, _hist, cur, changed in EMPLOYEES]
+
+
+def gen_salary_transactions():
+    """18 months of salary payments (Feb 2025 → Jul 2026) to HISTORICAL accounts."""
+    tx = []
+    n = 0
+    for k, (y, m) in enumerate(month_iter(2025, 2, 18)):
+        for pid, name, _role, sal, hist, _cur, _ch in EMPLOYEES:
+            n += 1
+            tx.append({
+                "id": f"TX-SAL-{n:04d}", "booking_date": f"{y}-{m:02d}-25",
+                "amount": -float(sal), "currency": "SEK",
+                "creditor_name": name, "creditor_account": hist,
+                "creditor_orgnr": pid, "source": "seed",
+            })
+    return tx
+
+
 def main():
     balance = {"balance": 148200.0, "currency": "SEK", "account_name": "Företagskonto",
                "iban": "SE3550000000054910000003", "as_of": TODAY.isoformat(), "source": "seed"}
     files = {
         "supplier_invoices.json": gen_supplier_invoices(),
         "history_invoices.json": gen_history_invoices(),
-        "transactions.json": gen_transactions(),
+        "transactions.json": gen_transactions() + gen_salary_transactions(),
         "receivables.json": gen_receivables(),
         "obligations.json": gen_obligations(),
         "balance.json": balance,
+        "employees.json": gen_employees(),
     }
     for fname, data in files.items():
         (HERE / fname).write_text(json.dumps(data, indent=1, ensure_ascii=False))
@@ -194,8 +238,17 @@ def main():
         (date.fromisoformat(r["paid_date"]) - date.fromisoformat(r["due_date"])).days for r in el
     ) / len(el)
     assert mean_late == 22.0, mean_late
+    # payroll invariants
+    emps = files["employees.json"]
+    assert sum(e["monthly_salary"] for e in emps) == 182000
+    sal_tx = [t for t in files["transactions.json"] if t["id"].startswith("TX-SAL")]
+    assert len(sal_tx) == 18 * 6
+    jonas = next(e for e in emps if e["name"].startswith("Jonas"))
+    jonas_hist = {t["creditor_account"] for t in sal_tx if t["creditor_orgnr"] == jonas["id"]}
+    assert jonas_hist == {"SE4550000000058300007301"} and jonas["account_id"] not in jonas_hist
     print(f"seed OK: {len(cur)} current invoices, {len(files['history_invoices.json'])} history, "
-          f"{len(files['transactions.json'])} transactions, mean Elgiganten lateness {mean_late} days")
+          f"{len(files['transactions.json'])} transactions ({len(sal_tx)} salary), "
+          f"{len(emps)} employees, mean Elgiganten lateness {mean_late} days")
 
 
 if __name__ == "__main__":

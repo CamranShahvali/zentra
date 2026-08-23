@@ -698,5 +698,1085 @@
   "creditor_account": "SE4550000000005839825",
   "creditor_orgnr": "556677-8899",
   "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0001",
+  "booking_date": "2025-02-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0002",
+  "booking_date": "2025-02-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0003",
+  "booking_date": "2025-02-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0004",
+  "booking_date": "2025-02-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0005",
+  "booking_date": "2025-02-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0006",
+  "booking_date": "2025-02-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0007",
+  "booking_date": "2025-03-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0008",
+  "booking_date": "2025-03-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0009",
+  "booking_date": "2025-03-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0010",
+  "booking_date": "2025-03-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0011",
+  "booking_date": "2025-03-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0012",
+  "booking_date": "2025-03-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0013",
+  "booking_date": "2025-04-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0014",
+  "booking_date": "2025-04-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0015",
+  "booking_date": "2025-04-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0016",
+  "booking_date": "2025-04-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0017",
+  "booking_date": "2025-04-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0018",
+  "booking_date": "2025-04-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0019",
+  "booking_date": "2025-05-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0020",
+  "booking_date": "2025-05-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0021",
+  "booking_date": "2025-05-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0022",
+  "booking_date": "2025-05-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0023",
+  "booking_date": "2025-05-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0024",
+  "booking_date": "2025-05-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0025",
+  "booking_date": "2025-06-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0026",
+  "booking_date": "2025-06-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0027",
+  "booking_date": "2025-06-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0028",
+  "booking_date": "2025-06-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0029",
+  "booking_date": "2025-06-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0030",
+  "booking_date": "2025-06-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0031",
+  "booking_date": "2025-07-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0032",
+  "booking_date": "2025-07-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0033",
+  "booking_date": "2025-07-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0034",
+  "booking_date": "2025-07-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0035",
+  "booking_date": "2025-07-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0036",
+  "booking_date": "2025-07-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0037",
+  "booking_date": "2025-08-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0038",
+  "booking_date": "2025-08-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0039",
+  "booking_date": "2025-08-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0040",
+  "booking_date": "2025-08-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0041",
+  "booking_date": "2025-08-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0042",
+  "booking_date": "2025-08-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0043",
+  "booking_date": "2025-09-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0044",
+  "booking_date": "2025-09-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0045",
+  "booking_date": "2025-09-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0046",
+  "booking_date": "2025-09-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0047",
+  "booking_date": "2025-09-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0048",
+  "booking_date": "2025-09-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0049",
+  "booking_date": "2025-10-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0050",
+  "booking_date": "2025-10-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0051",
+  "booking_date": "2025-10-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0052",
+  "booking_date": "2025-10-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0053",
+  "booking_date": "2025-10-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0054",
+  "booking_date": "2025-10-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0055",
+  "booking_date": "2025-11-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0056",
+  "booking_date": "2025-11-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0057",
+  "booking_date": "2025-11-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0058",
+  "booking_date": "2025-11-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0059",
+  "booking_date": "2025-11-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0060",
+  "booking_date": "2025-11-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0061",
+  "booking_date": "2025-12-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0062",
+  "booking_date": "2025-12-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0063",
+  "booking_date": "2025-12-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0064",
+  "booking_date": "2025-12-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0065",
+  "booking_date": "2025-12-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0066",
+  "booking_date": "2025-12-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0067",
+  "booking_date": "2026-01-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0068",
+  "booking_date": "2026-01-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0069",
+  "booking_date": "2026-01-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0070",
+  "booking_date": "2026-01-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0071",
+  "booking_date": "2026-01-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0072",
+  "booking_date": "2026-01-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0073",
+  "booking_date": "2026-02-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0074",
+  "booking_date": "2026-02-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0075",
+  "booking_date": "2026-02-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0076",
+  "booking_date": "2026-02-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0077",
+  "booking_date": "2026-02-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0078",
+  "booking_date": "2026-02-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0079",
+  "booking_date": "2026-03-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0080",
+  "booking_date": "2026-03-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0081",
+  "booking_date": "2026-03-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0082",
+  "booking_date": "2026-03-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0083",
+  "booking_date": "2026-03-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0084",
+  "booking_date": "2026-03-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0085",
+  "booking_date": "2026-04-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0086",
+  "booking_date": "2026-04-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0087",
+  "booking_date": "2026-04-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0088",
+  "booking_date": "2026-04-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0089",
+  "booking_date": "2026-04-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0090",
+  "booking_date": "2026-04-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0091",
+  "booking_date": "2026-05-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0092",
+  "booking_date": "2026-05-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0093",
+  "booking_date": "2026-05-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0094",
+  "booking_date": "2026-05-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0095",
+  "booking_date": "2026-05-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0096",
+  "booking_date": "2026-05-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0097",
+  "booking_date": "2026-06-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0098",
+  "booking_date": "2026-06-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0099",
+  "booking_date": "2026-06-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0100",
+  "booking_date": "2026-06-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0101",
+  "booking_date": "2026-06-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0102",
+  "booking_date": "2026-06-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0103",
+  "booking_date": "2026-07-25",
+  "amount": -35000.0,
+  "currency": "SEK",
+  "creditor_name": "Anna Lindqvist",
+  "creditor_account": "SE2850000000054400001111",
+  "creditor_orgnr": "19860412-2398",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0104",
+  "booking_date": "2026-07-25",
+  "amount": -32000.0,
+  "currency": "SEK",
+  "creditor_name": "Jonas Bergström",
+  "creditor_account": "SE4550000000058300007301",
+  "creditor_orgnr": "19910305-4412",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0105",
+  "booking_date": "2026-07-25",
+  "amount": -31500.0,
+  "currency": "SEK",
+  "creditor_name": "Maria Kowalczyk",
+  "creditor_account": "SE1250000000012340002222",
+  "creditor_orgnr": "19880922-1157",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0106",
+  "booking_date": "2026-07-25",
+  "amount": -30000.0,
+  "currency": "SEK",
+  "creditor_name": "Erik Sandberg",
+  "creditor_account": "SE9850000000067890003333",
+  "creditor_orgnr": "19950714-3388",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0107",
+  "booking_date": "2026-07-25",
+  "amount": -28500.0,
+  "currency": "SEK",
+  "creditor_name": "Fatima Al-Rashid",
+  "creditor_account": "SE3350000000045670004444",
+  "creditor_orgnr": "19930228-5501",
+  "source": "seed"
+ },
+ {
+  "id": "TX-SAL-0108",
+  "booking_date": "2026-07-25",
+  "amount": -25000.0,
+  "currency": "SEK",
+  "creditor_name": "Lucas Öberg",
+  "creditor_account": "SE6650000000078900005555",
+  "creditor_orgnr": "19990106-7724",
+  "source": "seed"
  }
 ]

@@ -1,0 +1,56 @@
+[
+ {
+  "id": "19860412-2398",
+  "name": "Anna Lindqvist",
+  "role": "Owner / operations",
+  "monthly_salary": 35000.0,
+  "account_id": "SE2850000000054400001111",
+  "account_changed_at": null,
+  "source": "seed"
+ },
+ {
+  "id": "19910305-4412",
+  "name": "Jonas Bergström",
+  "role": "Team lead",
+  "monthly_salary": 32000.0,
+  "account_id": "SE7130000000009944882216",
+  "account_changed_at": "2026-08-25",
+  "source": "seed"
+ },
+ {
+  "id": "19880922-1157",
+  "name": "Maria Kowalczyk",
+  "role": "Cleaner",
+  "monthly_salary": 31500.0,
+  "account_id": "SE1250000000012340002222",
+  "account_changed_at": null,
+  "source": "seed"
+ },
+ {
+  "id": "19950714-3388",
+  "name": "Erik Sandberg",
+  "role": "Cleaner",
+  "monthly_salary": 30000.0,
+  "account_id": "SE9850000000067890003333",
+  "account_changed_at": null,
+  "source": "seed"
+ },
+ {
+  "id": "19930228-5501",
+  "name": "Fatima Al-Rashid",
+  "role": "Cleaner",
+  "monthly_salary": 28500.0,
+  "account_id": "SE3350000000045670004444",
+  "account_changed_at": null,
+  "source": "seed"
+ },
+ {
+  "id": "19990106-7724",
+  "name": "Lucas Öberg",
+  "role": "Cleaner (part-time)",
+  "monthly_salary": 25000.0,
+  "account_id": "SE6650000000078900005555",
+  "account_changed_at": null,
+  "source": "seed"
+ }
+]

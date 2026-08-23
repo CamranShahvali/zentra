@@ -13,7 +13,7 @@ import shutil
 import subprocess
 from datetime import date
 
-from . import audit, config, datalayer, fraud, planner
+from . import audit, config, datalayer, fraud, payroll, planner
 
 
 def run_pipeline(mode: str | None = None) -> dict:
@@ -35,7 +35,22 @@ def run_pipeline(mode: str | None = None) -> dict:
     trusted = datalayer.trusted_pairs()
     if trusted:
         audit.log("load_trusted_accounts", f"{len(trusted)} owner-verified pairs", "loaded")
+    flags = datalayer.supplier_flags()
+    paused_ids = []
     for inv in w.invoices:
+        flag = flags.get(inv.orgnr_norm) or {}
+        if flag.get("paused"):
+            verdicts.append(fraud.Verdict(
+                invoice_id=inv.id, status="HOLD",
+                reason=f"Supplier paused by you"
+                       + (f": {flag['reason']}" if flag.get("reason") else "")
+                       + ". No payment can be staged while paused.",
+                evidence={"paused": True, "paused_at": flag.get("ts")},
+            ))
+            paused_ids.append(inv.id)
+            audit.log("verify_invoice", f"{inv.id} {inv.supplier_name}",
+                      "HOLD: supplier paused by owner")
+            continue
         v = fraud.verify(inv, w.history_invoices, w.transactions, trusted)
         verdicts.append(v)
         audit.log("verify_invoice",
@@ -57,6 +72,16 @@ def run_pipeline(mode: str | None = None) -> dict:
               f"naive min {projection['naive']['min_balance']:.0f} -> planned min "
               f"{projection['planned']['min_balance']:.0f}")
 
+    # payroll screening — same rule, second domain
+    payroll_verdicts = payroll.screen_payroll(w.employees, w.transactions, trusted)
+    for e, pv in zip(w.employees, payroll_verdicts):
+        audit.log("verify_salary_account", f"{e.name} -> {e.account_id[-6:]}",
+                  f"{pv.status}: {pv.reason[:100]}")
+    payroll_held = [
+        {**pv.to_dict(), "employee": e.to_dict()}
+        for e, pv in zip(w.employees, payroll_verdicts) if pv.status == "HOLD"
+    ]
+
     inv_by_id = {i.id: i for i in w.invoices}
     pay_today = [p for p in items if p.pay_date == config.DEMO_TODAY]
     pay_later = [p for p in items if p.pay_date != config.DEMO_TODAY]
@@ -73,6 +98,8 @@ def run_pipeline(mode: str | None = None) -> dict:
         "pay_today": pay_today,
         "pay_later": pay_later,
         "inv_by_id": inv_by_id,
+        "payroll_verdicts": payroll_verdicts,
+        "payroll_held": payroll_held,
         "totals": {
             "due_count": len(w.invoices),
             "due_sum": sum(i.amount for i in w.invoices),
@@ -203,6 +230,7 @@ def morning_briefing(mode: str | None = None, use_llm: bool = True) -> dict:
     audit.log("write_briefing", f"author={author}", text[:150])
 
     w = r["world"]
+    notes = datalayer.invoice_notes()
     return {
         "today": r["today"],
         "briefing": text,
@@ -211,6 +239,19 @@ def morning_briefing(mode: str | None = None, use_llm: bool = True) -> dict:
         "currency": w.currency,
         "sources": w.sources,
         "totals": r["totals"],
+        "validation": datalayer.validate_world(w),
+        "payroll": {
+            "employees": [
+                {**e.to_dict(),
+                 "verdict": next(v.to_dict() for v in r["payroll_verdicts"] if v.invoice_id == e.id)}
+                for e in w.employees
+            ],
+            "held": r["payroll_held"],
+            "total_monthly": sum(e.monthly_salary for e in w.employees),
+            "next_run": next((o.due_date for o in w.obligations if "salar" in o.name.lower()), None),
+        },
+        "notes": notes,
+        "supplier_flags": datalayer.supplier_flags(),
         "held": [
             {**v.to_dict(), "invoice": r["inv_by_id"][v.invoice_id].to_dict()}
             for v in r["held"]

@@ -29,11 +29,17 @@
       <button class="nav-item" data-page="invoices">
         <span class="nav-ic">☰</span> Invoices <span class="nav-badge danger" id="nav-alerts" hidden>1</span>
       </button>
+      <button class="nav-item" data-page="payroll">
+        <span class="nav-ic">◫</span> Payroll <span class="nav-badge danger" id="nav-payroll-alerts" hidden>1</span>
+      </button>
       <button class="nav-item" data-page="payments">
         <span class="nav-ic">⇥</span> Payments
       </button>
       <button class="nav-item" data-page="customers">
         <span class="nav-ic">◔</span> Customers
+      </button>
+      <button class="nav-item" data-page="reports">
+        <span class="nav-ic">▤</span> Reports
       </button>
       <button class="nav-item" data-page="connections">
         <span class="nav-ic">⚲</span> Connections
@@ -125,7 +131,9 @@
       <header class="page-head">
         <h1>Invoices</h1>
         <span class="page-sub">supplier invoices due · every payment account verified against bank history</span>
-        <button class="secondary head-action" id="new-invoice-btn">+ New invoice</button>
+        <button class="secondary head-action" id="upload-btn">⇪ Upload invoice</button>
+        <button class="secondary head-action-2" id="new-invoice-btn">+ New invoice</button>
+        <input type="file" id="upload-input" accept=".pdf,.txt" hidden>
       </header>
       <article class="card form-card" id="new-invoice-form" hidden>
         <div class="card-head"><div class="card-title">Register supplier invoice</div></div>
@@ -211,6 +219,84 @@
         </div>
         <button class="secondary danger-outline" id="dt-trust-btn">I verified — trust this account</button>
       </div>
+      <div class="two-col notes-row">
+        <article class="card">
+          <div class="card-head"><div class="card-title">Notes</div></div>
+          <ul class="notes-list" id="dt-notes"></ul>
+          <div class="note-add">
+            <input id="dt-note-input" placeholder="e.g. Called their office — waiting for callback">
+            <button class="secondary" id="dt-note-btn">Add note</button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-head"><div class="card-title">Supplier controls</div></div>
+          <p class="muted" id="dt-pause-state">—</p>
+          <input id="dt-pause-reason" placeholder="Reason (e.g. contract dispute)">
+          <button class="secondary danger-outline" id="dt-pause-btn">Pause payments to this supplier</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ PAYROLL ============ -->
+    <section class="page" id="page-payroll">
+      <header class="page-head">
+        <h1>Payroll</h1>
+        <span class="page-sub" id="payroll-sub">salary accounts verified against 18 months of actual payments</span>
+      </header>
+      <article class="card alert-card" id="pr-alert" hidden>
+        <div class="alert-row">
+          <span class="flag">HELD</span>
+          <div class="alert-main">
+            <div class="alert-title" id="pr-alert-title">—</div>
+            <div class="alert-sub" id="pr-alert-sub">—</div>
+          </div>
+          <div class="alert-amount" id="pr-alert-amount">—</div>
+        </div>
+        <div class="pr-actions">
+          <button class="secondary danger-outline" id="pr-trust-btn">I confirmed with the employee — trust account</button>
+          <span class="muted">Confirm in person or by phone — never by replying to the email that requested the change.</span>
+        </div>
+      </article>
+      <article class="card table-card">
+        <table class="tbl">
+          <thead><tr><th>Status</th><th>Employee</th><th>Role</th>
+            <th class="num">Monthly salary</th><th>Salary account</th><th>Verification</th></tr></thead>
+          <tbody id="pr-body"></tbody>
+        </table>
+      </article>
+      <div class="reg-line soft">
+        Next payroll run: <b id="pr-next">—</b> · total <b id="pr-total">—</b>.
+        Same rule as invoices: a salary account that has never received a salary is held until a human confirms it.
+      </div>
+    </section>
+
+    <!-- ============ REPORTS ============ -->
+    <section class="page" id="page-reports">
+      <header class="page-head">
+        <h1>Reports</h1>
+        <span class="page-sub">monthly statement — in production generated on the 1st and emailed automatically</span>
+        <button class="secondary head-action" id="rep-generate">Generate for August 2026</button>
+      </header>
+      <div id="rep-content" hidden>
+        <article class="card">
+          <div class="card-head"><div class="card-title">Statement <span class="chip" id="rep-period"></span></div></div>
+          <p class="briefing" id="rep-narrative">…</p>
+          <p class="muted" id="rep-note"></p>
+        </article>
+        <div class="two-col">
+          <article class="card">
+            <div class="card-head"><div class="card-title">Money out <span class="count" id="rep-out-count"></span></div></div>
+            <div class="stat-val" id="rep-out-total">—</div>
+            <div class="card-head" style="margin-top:16px"><div class="card-title">Largest costs</div></div>
+            <ul class="rows" id="rep-costs"></ul>
+          </article>
+          <article class="card">
+            <div class="card-head"><div class="card-title">Open invoices — what and why</div></div>
+            <ul class="rows" id="rep-open"></ul>
+          </article>
+        </div>
+      </div>
+      <p class="muted" id="rep-empty">No report generated yet.</p>
     </section>
 
     <!-- ============ PAYMENTS ============ -->
@@ -307,6 +393,24 @@
     </section>
 
   </main>
+</div>
+
+<!-- ASSISTANT -->
+<button class="assistant-fab" id="fab" title="Ask Zentra">?</button>
+<div class="assistant-panel" id="assistant-panel" hidden>
+  <div class="assistant-head">
+    <b>Zentra assistant</b>
+    <span class="muted">answers questions about this app only — cannot move money</span>
+    <button class="ghost" id="assistant-close">✕</button>
+  </div>
+  <div class="assistant-log" id="assistant-log">
+    <div class="a-msg bot">Hi! Ask me anything about what you see — why an invoice is held,
+    what the plan means, where to sign. I can explain; only you can act.</div>
+  </div>
+  <div class="assistant-input">
+    <input id="assistant-q" placeholder="Why is Städgrossisten held?">
+    <button class="primary" id="assistant-send">Ask</button>
+  </div>
 </div>
 
 <script src="/static/app.js?v=3"></script>

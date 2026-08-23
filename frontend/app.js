@@ -33,6 +33,7 @@ async function load(fast = false) {
   DATA = await r.json();
   renderOverview();
   renderInvoices();
+  renderPayroll();
   renderPayments();
   renderCustomers();
 }
@@ -275,12 +276,70 @@ function openDetail(invoiceId) {
     tb.hidden = true;
   }
 
+  // notes + pause controls
+  renderNotes(inv.id);
+  $("dt-note-btn").onclick = async () => {
+    const t = $("dt-note-input").value.trim();
+    if (!t) return;
+    $("dt-note-btn").disabled = true;
+    try {
+      await fetch(`/api/invoices/${inv.id}/notes`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: t }),
+      });
+      $("dt-note-input").value = "";
+      await load(true);
+      renderNotes(inv.id);
+    } finally {
+      $("dt-note-btn").disabled = false;
+    }
+  };
+  const flags = DATA.supplier_flags || {};
+  const orgKey = (inv.supplier_orgnr || "").replace(/\D/g, "");
+  const isPaused = !!(flags[orgKey] && flags[orgKey].paused);
+  $("dt-pause-state").textContent = isPaused
+    ? `Paused since ${String(flags[orgKey].ts || "").slice(0, 10)}${flags[orgKey].reason ? " — " + flags[orgKey].reason : ""}. All invoices from this supplier are held.`
+    : "Payments to this supplier are active.";
+  const pauseBtn = $("dt-pause-btn");
+  pauseBtn.textContent = isPaused ? "Resume payments to this supplier" : "Pause payments to this supplier";
+  pauseBtn.disabled = !inv.supplier_orgnr;
+  pauseBtn.onclick = async () => {
+    pauseBtn.disabled = true;
+    try {
+      await fetch("/api/suppliers/pause", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgnr: inv.supplier_orgnr, paused: !isPaused,
+                               reason: $("dt-pause-reason").value.trim() }),
+      });
+      $("dt-pause-reason").value = "";
+      await load(true);
+      openDetail(inv.id);
+    } finally {
+      pauseBtn.disabled = false;
+    }
+  };
+
   show("detail");
   document.querySelectorAll(".nav-item").forEach((n) =>
     n.classList.toggle("active", n.dataset.page === "invoices")
   );
 }
 $("detail-back").addEventListener("click", () => show("invoices"));
+
+function renderNotes(invoiceId) {
+  const ul = $("dt-notes");
+  ul.innerHTML = "";
+  const notes = (DATA.notes || {})[invoiceId] || [];
+  if (!notes.length) {
+    ul.innerHTML = '<li class="muted">No notes yet.</li>';
+    return;
+  }
+  notes.forEach((n) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<div class="n-ts">${n.ts.replace("T", " ")}</div>${n.text}`;
+    ul.appendChild(li);
+  });
+}
 
 /* ---------- payments ---------- */
 function renderPayments() {
@@ -481,6 +540,184 @@ $("f-submit").addEventListener("click", async () => {
   } finally {
     btn.disabled = false;
     btn.textContent = "Register & screen";
+  }
+});
+
+/* ---------- payroll ---------- */
+function renderPayroll() {
+  const pr = DATA.payroll || { employees: [], held: [] };
+  $("nav-payroll-alerts").hidden = pr.held.length === 0;
+  $("nav-payroll-alerts").textContent = pr.held.length;
+  $("pr-total").textContent = sek(pr.total_monthly || 0);
+  $("pr-next").textContent = fmtDate(pr.next_run);
+
+  const alertCard = $("pr-alert");
+  if (pr.held.length) {
+    const h = pr.held[0];
+    alertCard.hidden = false;
+    $("pr-alert-title").textContent = h.employee.name;
+    $("pr-alert-sub").textContent = h.reason;
+    $("pr-alert-amount").textContent = sek(h.employee.monthly_salary) + "/mo";
+    const btn = $("pr-trust-btn");
+    btn.disabled = false;
+    btn.textContent = "I confirmed with the employee — trust account";
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.textContent = "Recording…";
+      try {
+        const r = await fetch("/api/payroll/trust", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ employee_id: h.employee.id, account: h.employee.account_id }),
+        });
+        if (!r.ok) throw new Error("failed");
+        btn.textContent = "Re-screening…";
+        await load(true);
+        show("payroll");
+      } catch (e) {
+        btn.textContent = "Failed — retry";
+        btn.disabled = false;
+      }
+    };
+  } else {
+    alertCard.hidden = true;
+  }
+
+  const tb = $("pr-body");
+  tb.innerHTML = "";
+  pr.employees.forEach((e) => {
+    const v = e.verdict;
+    const isHold = v.status === "HOLD";
+    const isReview = v.status === "REVIEW";
+    const tr = document.createElement("tr");
+    if (isHold) tr.className = "held";
+    tr.innerHTML = `
+      <td>${isHold ? '<span class="status-chip hold">HELD</span>'
+          : isReview ? '<span class="status-chip review">REVIEW</span>'
+          : '<span class="status-chip ok">VERIFIED</span>'}</td>
+      <td><b>${e.name}</b><div class="verif-note">${e.id}</div></td>
+      <td>${e.role}</td>
+      <td class="num">${sek(e.monthly_salary)}</td>
+      <td class="acct-mono">${shortAcct(e.account_id)}</td>
+      <td><span class="verif-note${isHold ? " bad" : ""}">${
+        isHold ? "account changed " + (e.account_changed_at || "") + " — never received a salary"
+        : (v.evidence && v.evidence.times_paid ? v.evidence.times_paid + "× to this account" : v.reason.slice(0, 60))
+      }</span></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ---------- reports ---------- */
+$("rep-generate").addEventListener("click", async () => {
+  const btn = $("rep-generate");
+  btn.disabled = true;
+  btn.textContent = "Generating…";
+  try {
+    const r = await fetch("/api/report/2026/8?narrate=1");
+    const rep = await r.json();
+    $("rep-content").hidden = false;
+    $("rep-empty").hidden = true;
+    $("rep-period").textContent = rep.period;
+    $("rep-narrative").textContent = rep.narrative || "—";
+    $("rep-note").textContent = (rep.period_note || "") +
+      "  ·  In production this statement is generated on the 1st and emailed automatically; payment failures are listed with the bank's stated reason.";
+    $("rep-out-total").textContent = sek(rep.paid_out_total);
+    $("rep-out-count").textContent = rep.paid_out_count + " payments";
+    const costs = $("rep-costs");
+    costs.innerHTML = "";
+    rep.top_costs.forEach((c) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="row-name">${c.name}</span>
+        <span class="row-right"><div class="row-amt">${sek(c.amount)}</div></span>`;
+      costs.appendChild(li);
+    });
+    const open = $("rep-open");
+    open.innerHTML = "";
+    rep.open_invoices.forEach((o) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>
+          <div class="row-name">${o.supplier} — ${o.status}</div>
+          <div class="row-note">${o.why_not_paid || ""} · due ${fmtDate(o.due)}</div>
+        </span>
+        <span class="row-right"><div class="row-amt">${sek(o.amount)}</div></span>`;
+      open.appendChild(li);
+    });
+  } catch (e) {
+    $("rep-empty").textContent = "Report generation failed — retry.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Generate for August 2026";
+  }
+});
+
+/* ---------- assistant ---------- */
+$("fab").addEventListener("click", () => {
+  $("assistant-panel").hidden = !$("assistant-panel").hidden;
+  if (!$("assistant-panel").hidden) $("assistant-q").focus();
+});
+$("assistant-close").addEventListener("click", () => ($("assistant-panel").hidden = true));
+async function askAssistant() {
+  const q = $("assistant-q").value.trim();
+  if (!q) return;
+  $("assistant-q").value = "";
+  const log = $("assistant-log");
+  const user = document.createElement("div");
+  user.className = "a-msg user";
+  user.textContent = q;
+  log.appendChild(user);
+  const thinking = document.createElement("div");
+  thinking.className = "a-msg bot thinking";
+  thinking.textContent = "thinking…";
+  log.appendChild(thinking);
+  log.scrollTop = log.scrollHeight;
+  try {
+    const r = await fetch("/api/assistant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q }),
+    });
+    const d = await r.json();
+    thinking.classList.remove("thinking");
+    thinking.textContent = d.answer || "No answer.";
+  } catch (e) {
+    thinking.textContent = "Request failed — try again.";
+  }
+  log.scrollTop = log.scrollHeight;
+}
+$("assistant-send").addEventListener("click", askAssistant);
+$("assistant-q").addEventListener("keydown", (e) => e.key === "Enter" && askAssistant());
+
+/* ---------- upload ---------- */
+$("upload-btn").addEventListener("click", () => $("upload-input").click());
+$("upload-input").addEventListener("change", async () => {
+  const f = $("upload-input").files[0];
+  if (!f) return;
+  const btn = $("upload-btn");
+  btn.disabled = true;
+  btn.textContent = "Extracting…";
+  try {
+    const fd = new FormData();
+    fd.append("file", f);
+    const r = await fetch("/api/upload", { method: "POST", body: fd });
+    const d = await r.json();
+    const form = $("new-invoice-form");
+    form.hidden = false;
+    const fl = d.fields || {};
+    if (fl.supplier_name) $("f-supplier").value = fl.supplier_name;
+    if (fl.supplier_orgnr) $("f-orgnr").value = fl.supplier_orgnr;
+    if (fl.amount) $("f-amount").value = fl.amount;
+    if (fl.due_date) $("f-due").value = fl.due_date;
+    if (fl.reference) $("f-ref").value = fl.reference;
+    if (fl.account_id) $("f-account").value = fl.account_id;
+    $("f-msg").textContent = d.method === "claude"
+      ? `Extracted fields (confidence ${Math.round((d.confidence || 0) * 100)}%) — review, then Register & screen.`
+      : (d.detail || "Fill the fields manually.");
+  } catch (e) {
+    $("f-msg").textContent = "Upload failed — fill manually.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "⇪ Upload invoice";
+    $("upload-input").value = "";
   }
 });
 

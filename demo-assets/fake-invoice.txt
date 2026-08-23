@@ -1,0 +1,15 @@
+FAKTURA
+
+Städgrossisten AB
+Org.nr: 556677-8899
+Fakturanummer: 31048
+Fakturadatum: 2026-08-24
+Förfallodatum: 2026-09-05
+
+Beskrivning: Rengöringsmedel och städmaterial, augusti
+Belopp exkl. moms: 38 400,00 SEK
+Moms 25%: 9 600,00 SEK
+Att betala: 48 000,00 SEK
+
+Betalning till bankgiro: SE91 6000 0000 0009 4448 8221
+Vid frågor: ekonomi@stadgrossisten.se

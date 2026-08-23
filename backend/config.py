@@ -36,6 +36,9 @@ SEED_DIR = ROOT / "backend" / "seed"
 AUDIT_LOG = ROOT / "audit.jsonl"
 RUNTIME_INVOICES = ROOT / ".runtime_invoices.json"   # invoices added via the UI
 TRUSTED_ACCOUNTS = ROOT / ".trusted_accounts.json"   # owner-verified (orgnr, account) pairs
+INVOICE_NOTES = ROOT / ".invoice_notes.json"         # notes per invoice id
+SUPPLIER_FLAGS = ROOT / ".supplier_flags.json"       # paused suppliers keyed by orgnr_norm
+UPLOAD_DIR = ROOT / ".uploads"                       # uploaded invoice files
 
 # --- LLM ---
 LLM_BACKEND = os.getenv("LLM_BACKEND", "claude-code")  # claude-code | none
