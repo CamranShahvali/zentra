@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zentra — your money, guarded</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">zentra<span class="dot">.</span></div>
+  <nav class="crumbs">
+    <button class="crumb active" data-screen="briefing">Briefing</button>
+    <button class="crumb" data-screen="evidence" id="crumb-evidence" disabled>Evidence</button>
+    <button class="crumb" data-screen="signoff">Sign-off</button>
+  </nav>
+  <div class="top-right">
+    <span class="badge" id="mode-badge" title="Live sandbox pipelines + a seeded fraud scenario">sandbox · seeded scenario</span>
+    <button class="ghost" id="audit-toggle">Agent log</button>
+  </div>
+</header>
+
+<main id="main">
+  <!-- SCREEN 1: BRIEFING -->
+  <section class="screen active" id="screen-briefing">
+    <div class="hero">
+      <p class="kicker" id="date-line">Monday morning</p>
+      <h1>Good morning.<br>One invoice is <em>not</em> what it claims.</h1>
+    </div>
+    <div class="grid">
+      <div class="col-main">
+        <article class="card briefing-card">
+          <div class="card-label"><span class="pulse"></span> Zentra read your week <span id="author-chip" class="chip"></span></div>
+          <p id="briefing-text" class="briefing">…</p>
+        </article>
+        <article class="card hold-card" id="hold-card" hidden>
+          <div class="hold-head">
+            <span class="hold-flag">HELD</span>
+            <span class="hold-title" id="hold-supplier">—</span>
+            <span class="hold-amount" id="hold-amount">—</span>
+          </div>
+          <p class="hold-line" id="hold-line">—</p>
+          <button class="link-btn" id="open-evidence">See the evidence →</button>
+        </article>
+        <article class="card">
+          <div class="card-label">Cleared for payment <span class="count" id="cleared-count"></span></div>
+          <ul class="cleared-list" id="cleared-list"></ul>
+        </article>
+      </div>
+      <aside class="col-side">
+        <article class="card stat-card">
+          <div class="stat-label">Bank balance now</div>
+          <div class="stat-big" id="stat-balance">—</div>
+          <div class="stat-sub" id="stat-account">Företagskonto</div>
+        </article>
+        <article class="card stat-card warn">
+          <div class="stat-label">If you paid everything today</div>
+          <div class="stat-big danger" id="stat-naive">—</div>
+          <div class="stat-sub">lowest point before tax day — under your buffer</div>
+        </article>
+        <article class="card stat-card good">
+          <div class="stat-label">With Zentra's plan</div>
+          <div class="stat-big" id="stat-planned">—</div>
+          <div class="stat-sub" id="stat-planned-sub">lowest projected balance</div>
+        </article>
+        <button class="primary big" id="to-signoff">Prepare payments →</button>
+      </aside>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: EVIDENCE -->
+  <section class="screen" id="screen-evidence">
+    <div class="hero small">
+      <p class="kicker">The invoice that changed its bank account</p>
+      <h1 id="ev-title">—</h1>
+    </div>
+    <div class="grid halves">
+      <article class="card">
+        <div class="card-label">Today's invoice says</div>
+        <div class="kv"><span>Supplier</span><b id="ev-supplier">—</b></div>
+        <div class="kv"><span>Org. number</span><b id="ev-orgnr">—</b></div>
+        <div class="kv"><span>Amount</span><b id="ev-amount">—</b></div>
+        <div class="kv"><span>Due</span><b id="ev-due">—</b></div>
+        <div class="kv acct new"><span>Pay to account</span><b id="ev-new-acct">—</b></div>
+        <div class="firstseen" id="ev-firstseen">account first seen today</div>
+      </article>
+      <article class="card">
+        <div class="card-label">The bank's history says</div>
+        <div class="history-stat"><b id="ev-times">—</b> payments to <b>one</b> account</div>
+        <div class="kv acct known"><span id="ev-range">—</span><b id="ev-known-acct">—</b></div>
+        <div class="tx-strip" id="tx-strip" aria-hidden="true"></div>
+        <p class="muted" id="ev-bankline">Every one of them, confirmed in the bank's own transaction history.</p>
+      </article>
+    </div>
+    <div class="verdict-bar">
+      <div>
+        <b>Zentra's verdict: HOLD.</b>
+        <span id="ev-verdict">—</span>
+      </div>
+      <div class="verdict-note">Deterministic rule — no model, fully auditable.</div>
+    </div>
+    <div class="reg-line">
+      Your bank will not check this. Sweden gets Verification&nbsp;of&nbsp;Payee in <b>July&nbsp;2027</b> —
+      and even then it matches names, not history. <span class="muted">Until you verify by phone, this money does not move.</span>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: SIGN-OFF -->
+  <section class="screen" id="screen-signoff">
+    <div class="hero small">
+      <p class="kicker">Nothing moves without you</p>
+      <h1>Review the plan.<br>Sign once, in <em>your</em> bank.</h1>
+    </div>
+    <div class="grid">
+      <div class="col-main">
+        <article class="card">
+          <div class="card-label">Pay today <span class="count" id="today-count"></span></div>
+          <ul class="plan-list" id="plan-today"></ul>
+        </article>
+        <article class="card">
+          <div class="card-label">Waits for incoming money <span class="count" id="later-count"></span></div>
+          <ul class="plan-list" id="plan-later"></ul>
+        </article>
+      </div>
+      <aside class="col-side">
+        <article class="card stat-card">
+          <div class="stat-label">One batch, today</div>
+          <div class="stat-big" id="basket-total">—</div>
+          <div class="stat-sub" id="basket-count">—</div>
+        </article>
+        <button class="primary big" id="stage-btn">Stage as one signing basket</button>
+        <article class="card basket-card" id="basket-result" hidden>
+          <div class="card-label">Basket staged</div>
+          <div class="kv"><span>Basket</span><b id="basket-id">—</b></div>
+          <div class="kv"><span>Status</span><b id="basket-status">—</b></div>
+          <div class="kv"><span>Signed by Zentra</span><b class="never">never — by design</b></div>
+          <p class="muted sign-note">Open your bank app and sign with BankID to release the payments.
+          Zentra holds no payment credentials.</p>
+        </article>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<!-- AUDIT DRAWER -->
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <b>Agent log</b>
+    <span class="muted">every tool call, timestamped — the audit trail a bank would ask for</span>
+    <button class="ghost" id="drawer-close">✕</button>
+  </div>
+  <ul id="audit-list" class="audit-list"></ul>
+</aside>
+
+<footer class="foot">
+  <span>Zentra — Embedded Finance Build Day 2026</span>
+  <span class="muted">Zwapgrid reads the books · Open Payments reads the bank · a human signs</span>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
