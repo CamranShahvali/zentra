@@ -1,0 +1,18 @@
+[Unit]
+Description=Zentra — AI back office for supplier invoice fraud + cash planning
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/zentra
+Environment="DATA_MODE=seed"
+Environment="LLM_BACKEND=none"
+ExecStart=/home/ubuntu/zentra/.venv/bin/uvicorn backend.app:app --host 127.0.0.1 --port 8010
+Restart=always
+RestartSec=3
+StandardOutput=append:/home/ubuntu/zentra/server.log
+StandardError=append:/home/ubuntu/zentra/server.log
+
+[Install]
+WantedBy=multi-user.target

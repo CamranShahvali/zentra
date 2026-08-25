@@ -1,6 +1,6 @@
 {
  "consentStatus": "received",
- "consentId": "39c7901a-0bfb-41b8-84c2-82e92493d234",
+ "consentId": "76153062-d7d4-44f2-be10-62cc0cee4ff8",
  "scaMethods": [
   {
    "authenticationType": "PUSH_OTP",
@@ -8,25 +8,30 @@
    "name": "Mobilt BankID"
   },
   {
-   "authenticationType": "CHIP_OTP",
-   "authenticationMethodId": "digipass",
-   "name": "Digipass"
+   "authenticationType": "PHOTO_OTP",
+   "authenticationMethodId": "mbid_animated_qr_image",
+   "name": "Mobile BankID on another device"
+  },
+  {
+   "authenticationType": "PHOTO_OTP",
+   "authenticationMethodId": "mbid_animated_qr_token",
+   "name": "Mobile BankID on another device"
   },
   {
    "authenticationType": "CHIP_OTP",
-   "authenticationMethodId": "bankid_on_card",
-   "name": "BankID on card"
+   "authenticationMethodId": "mbid_same_device",
+   "name": "Mobile BankID on this device"
   }
  ],
  "_links": {
   "self": {
-   "href": "/psd2/consent/v1/consents/39c7901a-0bfb-41b8-84c2-82e92493d234"
+   "href": "/psd2/consent/v1/consents/76153062-d7d4-44f2-be10-62cc0cee4ff8"
   },
   "status": {
-   "href": "/psd2/consent/v1/consents/39c7901a-0bfb-41b8-84c2-82e92493d234/status"
+   "href": "/psd2/consent/v1/consents/76153062-d7d4-44f2-be10-62cc0cee4ff8/status"
   },
   "startAuthorisation": {
-   "href": "/psd2/consent/v1/consents/39c7901a-0bfb-41b8-84c2-82e92493d234/authorisations"
+   "href": "/psd2/consent/v1/consents/76153062-d7d4-44f2-be10-62cc0cee4ff8/authorisations"
   }
  }
 }
