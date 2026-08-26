@@ -29,13 +29,60 @@ document.querySelectorAll(".nav-item").forEach((n) =>
 
 /* ---------- load ---------- */
 async function load(fast = false) {
-  const r = await fetch("/api/briefing" + (fast ? "?fast=1" : ""));
-  DATA = await r.json();
+  // A failed load used to leave DATA as an error object and every render threw,
+  // so the whole product read as dead. Say what happened instead.
+  try {
+    const r = await fetch("/api/briefing" + (fast ? "?fast=1" : ""));
+    if (!r.ok) throw new Error("briefing " + r.status);
+    const next = await r.json();
+    if (!next || !next.totals) throw new Error("malformed briefing");
+    DATA = next;
+  } catch (e) {
+    const b = $("ov-briefing");
+    if (b) {
+      b.textContent =
+        "Zentra could not load this morning's screening (" + e.message +
+        "). The data is intact — reload, or reset the demo scenario.";
+    }
+    const a = $("ov-author");
+    if (a) a.textContent = "not loaded";
+    return;
+  }
   renderOverview();
   renderInvoices();
   renderPayroll();
   renderPayments();
   renderCustomers();
+  renderConnectionGate();
+}
+
+/* Show the data now, narrate a moment later.
+   The full briefing waits on the LLM (~8s). Blocking a connection flow on that
+   made the Connections page look stuck and the numbers look slow to arrive, so
+   paint the deterministic result first and let the narration swap itself in. */
+async function loadNow() {
+  await load(true);            // instant: screening + plan, template text
+  load();                      // background: same data, written by the agent
+}
+
+/* Nothing connected = nothing to show. Make that state deliberate and legible
+   rather than letting the screens render a convincing pile of zeroes. */
+function renderConnectionGate() {
+  const need = DATA.needs_connection;
+  const gate = $("gate-card");
+  if (!gate) return;
+  if (!need || (!need.ledger && !need.bank)) {
+    gate.hidden = true;
+    return;
+  }
+  const missing = [];
+  if (need.ledger) missing.push("bookkeeping");
+  if (need.bank) missing.push("bank");
+  $("gate-title").textContent =
+    "Connect your " + missing.join(" and ") + " to begin";
+  $("gate-sub").textContent = DATA.briefing || "";
+  $("gate-btn").onclick = () => show("connections");
+  gate.hidden = false;
 }
 
 /* ---------- overview ---------- */
@@ -65,24 +112,112 @@ function renderOverview() {
   $("ov-author").textContent =
     DATA.briefing_author === "claude" ? "written by the agent" : "generated";
 
-  if (DATA.held.length) {
-    const h = DATA.held[0];
-    const known = (h.evidence.known_accounts || [{}])[0];
+  // Lead with an account-swap hold if there is one: a paused supplier carries no
+  // payment history, so letting it take the alert card would push the fraud
+  // story off the screen and render "paid undefined×".
+  const fraudHolds = DATA.held.filter(
+    (h) => ((h.evidence || {}).known_accounts || []).length
+  );
+  const lead = fraudHolds[0] || DATA.held[0];
+
+  if (lead) {
+    const ev = lead.evidence || {};
+    const known = (ev.known_accounts || [{}])[0];
     $("ov-held").textContent = sek(DATA.totals.held_sum);
+    $("ov-held-stat").classList.add("alert");
     $("nav-alerts").hidden = false;
     $("nav-alerts").textContent = DATA.held.length;
     $("ov-alert").hidden = false;
-    $("ov-alert-title").textContent = h.invoice.supplier_name;
-    $("ov-alert-sub").textContent =
-      `paid ${known.times_paid}× to one account since ${String(known.first_seen || "").slice(0, 7)} — this invoice names a new one`;
-    $("ov-alert-amount").textContent = sek(h.invoice.amount);
-    $("ov-alert-open").onclick = () => openDetail(h.invoice.id);
+    $("ov-alert-title").textContent = lead.invoice.supplier_name;
+    $("ov-alert-sub").textContent = ev.paused
+      ? "payments to this supplier are paused by you — nothing will be staged"
+      : known.times_paid
+      ? `paid ${known.times_paid}× to one account since ${String(known.first_seen || "").slice(0, 7)} — this invoice names a new one`
+      : "held for review before anything moves";
+    $("ov-alert-amount").textContent = sek(lead.invoice.amount);
+    $("ov-alert-open").onclick = () => openDetail(lead.invoice.id);
   } else {
+    // Nothing held any more (e.g. the owner just verified the account) — clear
+    // the alert surfaces too, or the screen contradicts the verdict it shows.
     $("ov-held").textContent = "0 SEK";
+    $("ov-held-stat").classList.remove("alert");
+    $("ov-alert").hidden = true;
+    $("nav-alerts").hidden = true;
   }
 
   renderChart();
   renderUpcoming();
+  renderProvenance();
+  renderDuplicates();
+}
+
+/* Money already out the door. The fraud rule asks whether an account was ever
+   paid; this asks whether an invoice was paid twice — same join, opposite
+   question, and the only one of the two that hands cash back. */
+function renderDuplicates() {
+  const card = $("ov-dup");
+  if (!card) return;
+  const d = DATA.duplicates;
+  if (!d || !d.count) { card.hidden = true; return; }
+
+  $("dup-total").textContent = sek(d.total_recoverable) + " recoverable";
+  $("dup-lead").textContent =
+    d.count === 1
+      ? "One invoice was paid more than once."
+      : `${d.count} invoices were paid more than once.`;
+
+  const ul = $("dup-list");
+  ul.innerHTML = "";
+  d.findings.forEach((f) => {
+    const li = document.createElement("li");
+    li.innerHTML =
+      `<b>${f.supplier_name}</b> — ${sek(f.amount)} paid ${f.times_paid}× ` +
+      `(${fmtDate(f.first_paid)} and ${fmtDate(f.last_paid)}, ${f.days_apart} days apart)` +
+      `<div class="dup-ids">bank references: ${(f.transaction_ids || []).join(", ")}</div>`;
+    ul.appendChild(li);
+  });
+  card.hidden = false;
+}
+
+/* Say where every number came from. A blank presented as a fact is the failure
+   mode this product exists to argue against, so the ledger must never look
+   connected when it is a seeded company. */
+async function renderProvenance() {
+  const strip = $("prov-strip");
+  if (!strip) return;
+  const src = DATA.sources || {};
+  const ledgerLive = String(src.invoices || "").includes("live");
+  const bankLive = String(src.transactions || "").includes("live");
+
+  let conn = null;
+  try {
+    const r = await fetch("/api/connections");
+    if (r.ok) conn = await r.json();
+  } catch (e) { /* offline: fall back to the source tags alone */ }
+
+  const zgOn = conn && conn.zwapgrid && conn.zwapgrid.connected;
+  const opOn = conn && conn.openpayments && conn.openpayments.connected;
+
+  const zgPending = conn && conn.zwapgrid && conn.zwapgrid.pending;
+  $("prov-ledger").textContent = ledgerLive
+    ? "Ledger: live from " + ((conn.zwapgrid && conn.zwapgrid.system) || "your bookkeeping")
+    : zgOn
+    ? "Ledger: bookkeeping bound — seeded demo company still shown"
+    : zgPending
+    ? "Ledger: seeded demo company · consent approved, no accounting system bound yet"
+    : "Ledger: seeded demo company (Annas Städ AB)";
+  $("prov-ledger").className = "prov-item " + (ledgerLive ? "live" : "seed");
+
+  $("prov-bank").textContent = bankLive
+    ? "Bank: live transactions"
+    : opOn
+    ? "Bank: SEB sandbox · consent valid"
+    : "Bank: not connected";
+  $("prov-bank").className = "prov-item " + (bankLive || opOn ? "live" : "seed");
+
+  $("prov-connect").hidden = !!(ledgerLive || zgOn);
+  $("prov-connect").onclick = () => show("connections");
+  strip.hidden = false;
 }
 
 function renderChart() {
@@ -212,7 +347,17 @@ function openDetail(invoiceId) {
   $("dt-firstseen").textContent = isHold ? "account first seen today" : "";
 
   const known = (ev.known_accounts || [])[0] || {};
-  if (isHold) {
+  if (ev.paused) {
+    // Paused carries no account history — rendering the fraud copy here printed
+    // "paid undefined× ... since ".
+    $("dt-times").textContent = "—";
+    $("dt-known-acct").textContent = "paused";
+    $("dt-range").textContent = "paused by you";
+    $("dt-bankline").textContent =
+      "You paused payments to this supplier" +
+      (ev.reason ? ` — “${ev.reason}”` : "") +
+      ". Nothing is staged for them until you lift it, whatever the account says.";
+  } else if (isHold) {
     $("dt-times").textContent = known.times_paid || "—";
     $("dt-known-acct").textContent = shortAcct(known.account);
     $("dt-range").textContent =
@@ -225,6 +370,14 @@ function openDetail(invoiceId) {
     $("dt-range").textContent = "no org. number on the invoice";
     $("dt-bankline").textContent =
       "Without an organisation number the payment history cannot be matched. Add the supplier's org. number, or verify manually.";
+  } else if (ev.trusted_by_owner) {
+    // Do not claim the history matched — it did not. You overrode it.
+    $("dt-times").textContent = "—";
+    $("dt-known-acct").textContent = shortAcct(inv.account_id);
+    $("dt-range").textContent = "verified by you";
+    $("dt-bankline").textContent =
+      "No payment history backs this account. It is cleared because you confirmed " +
+      "it directly with the supplier — that attestation is in the log.";
   } else {
     $("dt-times").textContent = ev.times_paid || "—";
     $("dt-known-acct").textContent = shortAcct(inv.account_id);
@@ -235,7 +388,9 @@ function openDetail(invoiceId) {
 
   const strip = $("dt-strip");
   strip.innerHTML = "";
-  const n = (isHold ? known.times_paid : ev.times_paid) || 0;
+  const n = (ev.paused || ev.trusted_by_owner)
+    ? 0
+    : (isHold ? known.times_paid : ev.times_paid) || 0;
   for (let i = 0; i < n; i++) {
     const c = document.createElement("span");
     c.className = "tx-cell" + (i % 5 === 4 ? " big" : "");
@@ -249,7 +404,7 @@ function openDetail(invoiceId) {
 
   // trust action: only for held invoices with an orgnr
   const tb = $("dt-trustbar");
-  if (isHold && inv.supplier_orgnr) {
+  if (isHold && inv.supplier_orgnr && !ev.paused) {
     tb.hidden = false;
     const btn = $("dt-trust-btn");
     btn.disabled = false;
@@ -266,14 +421,61 @@ function openDetail(invoiceId) {
         if (!resp.ok) throw new Error("trust failed: " + resp.status);
         btn.textContent = "Re-screening…";
         await load(true);           // fast re-screen — no LLM, instant
+        btn.textContent = "Verified ✓";
         openDetail(inv.id);         // re-render this invoice — now VERIFIED
       } catch (e) {
         btn.textContent = "Failed — retry";
+      } finally {
+        // Never leave a progress label as the final state: the re-render normally
+        // hides this bar, but if the reload bailed the button would otherwise be
+        // stranded on "Re-screening…" for an action that already succeeded.
         btn.disabled = false;
+        if (btn.textContent === "Re-screening…") btn.textContent = "Verified ✓";
       }
     };
   } else {
     tb.hidden = true;
+  }
+
+  // REVIEW has no orgnr to trust against — ask for the missing field instead,
+  // then let the normal rule decide. Never a one-click "clear anyway".
+  const ob = $("dt-orgnrbar");
+  if (ob) {
+    if (isReview) {
+      ob.hidden = false;
+      const inp = $("dt-orgnr-input");
+      const obtn = $("dt-orgnr-btn");
+      inp.value = "";
+      obtn.disabled = false;
+      obtn.textContent = "Add & re-screen";
+      obtn.onclick = async () => {
+        const orgnr = (inp.value || "").trim();
+        if (orgnr.replace(/\D/g, "").length < 10) {
+          obtn.textContent = "Needs 10 digits";
+          setTimeout(() => (obtn.textContent = "Add & re-screen"), 1600);
+          return;
+        }
+        obtn.disabled = true;
+        obtn.textContent = "Re-screening…";
+        try {
+          const resp = await fetch(`/api/invoices/${encodeURIComponent(inv.id)}/orgnr`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orgnr }),
+          });
+          if (!resp.ok) throw new Error("orgnr failed: " + resp.status);
+          await load(true);
+          openDetail(inv.id);
+        } catch (e) {
+          obtn.textContent = "Failed — retry";
+        } finally {
+          obtn.disabled = false;
+          if (obtn.textContent === "Re-screening…") obtn.textContent = "Add & re-screen";
+        }
+      };
+    } else {
+      ob.hidden = true;
+    }
   }
 
   // notes + pause controls
@@ -374,12 +576,21 @@ $("stage-btn").addEventListener("click", async () => {
   const btn = $("stage-btn");
   btn.disabled = true;
   btn.textContent = "Staging…";
-  const r = await fetch("/api/basket", { method: "POST" });
-  const b = await r.json();
-  $("bk-result").hidden = false;
-  $("bk-id").textContent = b.basket_id;
-  $("bk-status").textContent = b.status;
-  btn.textContent = "Staged ✓";
+  try {
+    const r = await fetch("/api/basket", { method: "POST" });
+    if (!r.ok) throw new Error("basket " + r.status);
+    const b = await r.json();
+    $("bk-result").hidden = false;
+    $("bk-id").textContent = b.basket_id;
+    $("bk-status").textContent = b.status;
+    btn.textContent = "Stage batch for signing";
+  } catch (e) {
+    btn.textContent = "Staging failed — retry";
+  } finally {
+    // Always re-arm: the demo is often run twice, and a button stuck on
+    // "Staging…" reads as a hang.
+    btn.disabled = false;
+  }
 });
 
 /* ---------- customers ---------- */
@@ -410,7 +621,9 @@ async function refreshConnections() {
     const r = await fetch("/api/connections");
     const c = await r.json();
     const zg = $("conn-zg");
-    zg.textContent = c.zwapgrid.connected ? "CONNECTED" : c.zwapgrid.pending ? "WAITING FOR APPROVAL" : "NOT CONNECTED";
+    zg.textContent = c.zwapgrid.connected
+      ? "CONNECTED" + (c.zwapgrid.system ? " · " + c.zwapgrid.system : "")
+      : c.zwapgrid.pending ? "NO ACCOUNTING SYSTEM BOUND" : "NOT CONNECTED";
     zg.className = "conn-status " + (c.zwapgrid.connected ? "on" : c.zwapgrid.pending ? "wait" : "");
     $("conn-zg-id").textContent = c.zwapgrid.consent_id
       ? c.zwapgrid.consent_id.slice(0, 8) + "…" : "—";
@@ -432,6 +645,10 @@ $("conn-zg-btn").addEventListener("click", async () => {
     $("conn-zg-hint").hidden = false;
     window.open(d.onboarding_url, "_blank");
     $("conn-zg-btn").textContent = "Approval page opened ↗";
+    // The consent now exists, so the gate lifts. Refresh the status chip first —
+    // it is what the owner is looking at — then paint the data.
+    await refreshConnections();
+    loadNow();
     pollZg();
   } else {
     $("conn-zg-btn").textContent = "Failed — retry";
@@ -442,30 +659,82 @@ async function pollZg() {
   for (let i = 0; i < 60; i++) {
     await new Promise((res) => setTimeout(res, 5000));
     await refreshConnections();
-    if ($("conn-zg").classList.contains("on")) return;
+    if ($("conn-zg").classList.contains("on")) {
+      loadNow();      // ledger now readable — bring the invoices in
+      return;
+    }
   }
 }
 
 $("conn-op-btn").addEventListener("click", async () => {
-  $("conn-op-btn").disabled = true;
-  $("conn-op-btn").textContent = "Creating bank consent…";
-  const r = await fetch("/api/connections/openpayments", { method: "POST" });
-  const d = await r.json();
-  $("conn-op-btn").disabled = false;
+  const btn = $("conn-op-btn");
   const hint = $("conn-op-hint");
+  btn.disabled = true;
+  btn.textContent = "Creating bank consent…";
   hint.hidden = false;
-  if (d.sca_url) {
-    hint.innerHTML = `Bank approval page opened in a new tab. Approve there, then come back.`;
-    window.open(d.sca_url, "_blank");
-    $("conn-op-btn").textContent = "Approval page opened ↗";
-  } else if (d.connected) {
-    hint.textContent = "Connected — no user approval required by this sandbox bank.";
-  } else {
-    hint.textContent = d.detail || "The sandbox did not return an approval link — see Agent log.";
-    $("conn-op-btn").textContent = "Retry";
+  try {
+    const r = await fetch("/api/connections/openpayments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method: "mbid" }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || "consent " + r.status);
+
+    if (d.sca_status) {
+      // SEB's decoupled flow: the PSU approves in their own BankID app and the
+      // authorisation finalises out-of-band, so poll rather than pretend.
+      const names = (d.methods || []).map((m) => m.name).filter(Boolean);
+      hint.textContent =
+        (d.psu_message || "Confirm in your bank app.") +
+        (names.length ? "  ·  SEB offers: " + names.join(", ") : "");
+      btn.textContent = "Waiting for BankID…";
+      await pollSca(d.consent_id, d.authorisation_id, hint, btn);
+    } else if (d.connected) {
+      hint.textContent = "Connected — this sandbox bank required no approval.";
+      btn.textContent = "Connected ✓";
+    } else if (d.sca_url) {
+      hint.textContent = "Bank approval page opened in a new tab.";
+      window.open(d.sca_url, "_blank");
+      btn.textContent = "Approval page opened ↗";
+    } else {
+      hint.textContent = "No approval route returned — see Agent log.";
+      btn.textContent = "Retry";
+    }
+  } catch (e) {
+    hint.textContent = "Could not reach the bank: " + e.message;
+    btn.textContent = "Retry";
+  } finally {
+    btn.disabled = false;
+    await refreshConnections();
+    loadNow();               // consent cached -> gate lifts -> show the data
   }
-  refreshConnections();
 });
+
+async function pollSca(consentId, authId, hint, btn) {
+  if (!consentId || !authId) return;
+  for (let i = 0; i < 10; i++) {
+    await new Promise((r) => setTimeout(r, 1500));
+    try {
+      const r = await fetch(
+        `/api/connections/openpayments/sca?consent_id=${encodeURIComponent(consentId)}` +
+        `&authorisation_id=${encodeURIComponent(authId)}`
+      );
+      if (!r.ok) continue;
+      const s = await r.json();
+      if (s.finalised) {
+        hint.textContent = "Approved in the bank app — consent is live.";
+        btn.textContent = "Connected ✓";
+        await refreshConnections();
+        loadNow();
+        return;
+      }
+      btn.textContent = `Waiting for BankID… (${s.sca_status || "started"})`;
+    } catch (e) { /* keep polling */ }
+  }
+  hint.textContent = "Still waiting on BankID approval — reopen this page to re-check.";
+  btn.textContent = "Check again";
+}
 
 /* ---------- audit ---------- */
 async function refreshAudit() {
@@ -573,10 +842,13 @@ function renderPayroll() {
         if (!r.ok) throw new Error("failed");
         btn.textContent = "Re-screening…";
         await load(true);
+        btn.textContent = "Verified ✓";
         show("payroll");
       } catch (e) {
         btn.textContent = "Failed — retry";
+      } finally {
         btn.disabled = false;
+        if (btn.textContent === "Re-screening…") btn.textContent = "Verified ✓";
       }
     };
   } else {
@@ -585,7 +857,7 @@ function renderPayroll() {
 
   const tb = $("pr-body");
   tb.innerHTML = "";
-  pr.employees.forEach((e) => {
+  (pr.employees || []).forEach((e) => {
     const v = e.verdict;
     const isHold = v.status === "HOLD";
     const isReview = v.status === "REVIEW";
@@ -613,7 +885,12 @@ $("rep-generate").addEventListener("click", async () => {
   btn.disabled = true;
   btn.textContent = "Generating…";
   try {
-    const r = await fetch("/api/report/2026/8?narrate=1");
+    // The statement covers the last COMPLETE month — asking for the month that
+    // is still running returns an empty period and an apology note.
+    const t = new Date((DATA && DATA.today ? DATA.today : "2026-08-25") + "T00:00:00");
+    const y = t.getMonth() === 0 ? t.getFullYear() - 1 : t.getFullYear();
+    const m = t.getMonth() === 0 ? 12 : t.getMonth();   // getMonth() is 0-based => previous month
+    const r = await fetch(`/api/report/${y}/${m}?narrate=1`);
     const rep = await r.json();
     $("rep-content").hidden = false;
     $("rep-empty").hidden = true;
@@ -702,6 +979,9 @@ $("upload-input").addEventListener("change", async () => {
     const d = await r.json();
     const form = $("new-invoice-form");
     form.hidden = false;
+    // The form is above the invoice table, so showing it without scrolling left
+    // the owner looking at a table wondering where the extracted fields went.
+    form.scrollIntoView({ block: "center", behavior: "smooth" });
     const fl = d.fields || {};
     if (fl.supplier_name) $("f-supplier").value = fl.supplier_name;
     if (fl.supplier_orgnr) $("f-orgnr").value = fl.supplier_orgnr;
@@ -709,16 +989,20 @@ $("upload-input").addEventListener("change", async () => {
     if (fl.due_date) $("f-due").value = fl.due_date;
     if (fl.reference) $("f-ref").value = fl.reference;
     if (fl.account_id) $("f-account").value = fl.account_id;
-    $("f-msg").textContent = d.method === "claude"
-      ? `Extracted fields (confidence ${Math.round((d.confidence || 0) * 100)}%) — review, then Register & screen.`
+    const read = String(d.method || "");
+    $("f-msg").textContent = read.startsWith("claude")
+      ? `Read ${read.includes("ocr") ? "from the image" : "from the file"} ` +
+        `(confidence ${Math.round((d.confidence || 0) * 100)}%) — review, then Register & screen.`
       : (d.detail || "Fill the fields manually.");
   } catch (e) {
     $("f-msg").textContent = "Upload failed — fill manually.";
   } finally {
     btn.disabled = false;
-    btn.textContent = "⇪ Upload invoice";
+    btn.textContent = "⇪ Upload invoice (PDF, image or text)";
     $("upload-input").value = "";
   }
 });
 
-load();
+// First paint must not wait on the narration: show the screening immediately,
+// then swap in the agent's own words when they arrive.
+loadNow();

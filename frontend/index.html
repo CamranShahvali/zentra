@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css?v=3">
+<link rel="stylesheet" href="/static/style.css?v=12">
 </head>
 <body>
 
@@ -63,6 +63,18 @@
         <span class="page-sub" id="ov-date">—</span>
       </header>
 
+      <article class="card gate-card" id="gate-card" hidden>
+        <div class="gate-title" id="gate-title">Connect your bookkeeping and bank to begin</div>
+        <p class="gate-sub" id="gate-sub"></p>
+        <button class="primary" id="gate-btn">Go to Connections →</button>
+      </article>
+
+      <div class="provenance" id="prov-strip" hidden>
+        <span class="prov-item" id="prov-ledger">—</span>
+        <span class="prov-item" id="prov-bank">—</span>
+        <button class="link-btn prov-link" id="prov-connect">Connect your bookkeeping →</button>
+      </div>
+
       <div class="stat-row">
         <div class="stat">
           <div class="stat-label">Bank balance</div>
@@ -106,6 +118,19 @@
             </div>
             <button class="link-btn" id="ov-alert-open">Review evidence →</button>
           </article>
+
+          <article class="card dup-card" id="ov-dup" hidden>
+            <div class="card-head">
+              <div class="card-title">Paid twice</div>
+              <span class="dup-total" id="dup-total">—</span>
+            </div>
+            <p class="dup-lead" id="dup-lead">—</p>
+            <ul class="dup-list" id="dup-list"></ul>
+            <p class="dup-foot">
+              Both payments were authorised and correctly booked — that is why
+              nobody notices. Only the books and the bank together show it.
+            </p>
+          </article>
         </div>
 
         <div class="col">
@@ -131,9 +156,9 @@
       <header class="page-head">
         <h1>Invoices</h1>
         <span class="page-sub">supplier invoices due · every payment account verified against bank history</span>
-        <button class="secondary head-action" id="upload-btn">⇪ Upload invoice</button>
+        <button class="secondary head-action" id="upload-btn">⇪ Upload invoice (PDF, image or text)</button>
         <button class="secondary head-action-2" id="new-invoice-btn">+ New invoice</button>
-        <input type="file" id="upload-input" accept=".pdf,.txt" hidden>
+        <input type="file" id="upload-input" accept=".pdf,.txt,.png,.jpg,.jpeg,.webp,.tif,.tiff" hidden>
       </header>
       <article class="card form-card" id="new-invoice-form" hidden>
         <div class="card-head"><div class="card-title">Register supplier invoice</div></div>
@@ -219,6 +244,16 @@
         </div>
         <button class="secondary danger-outline" id="dt-trust-btn">I verified — trust this account</button>
       </div>
+      <div class="trust-bar" id="dt-orgnrbar" hidden>
+        <div>
+          <b>This invoice has no organisation number.</b>
+          <div class="muted">Without it the supplier cannot be matched against payment history. Add it and Zentra screens the invoice normally — it may still be held.</div>
+        </div>
+        <span class="orgnr-entry">
+          <input id="dt-orgnr-input" type="text" placeholder="556677-8899" autocomplete="off">
+          <button class="secondary" id="dt-orgnr-btn">Add &amp; re-screen</button>
+        </span>
+      </div>
       <div class="two-col notes-row">
         <article class="card">
           <div class="card-head"><div class="card-title">Notes</div></div>
@@ -275,7 +310,7 @@
       <header class="page-head">
         <h1>Reports</h1>
         <span class="page-sub">monthly statement — in production generated on the 1st and emailed automatically</span>
-        <button class="secondary head-action" id="rep-generate">Generate for August 2026</button>
+        <button class="secondary head-action" id="rep-generate">Generate last month's statement</button>
       </header>
       <div id="rep-content" hidden>
         <article class="card">
@@ -396,7 +431,12 @@
 </div>
 
 <!-- ASSISTANT -->
-<button class="assistant-fab" id="fab" title="Ask Zentra">?</button>
+<button class="assistant-fab" id="fab" title="Ask Zentra" aria-label="Ask Zentra">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12 2.6l1.9 5.1a4 4 0 0 0 2.4 2.4l5.1 1.9-5.1 1.9a4 4 0 0 0-2.4 2.4L12 21.4l-1.9-5.1a4 4 0 0 0-2.4-2.4L2.6 12l5.1-1.9a4 4 0 0 0 2.4-2.4L12 2.6z"/>
+    <path d="M19 2.5l.7 1.8.0 0 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" opacity=".85"/>
+  </svg>
+</button>
 <div class="assistant-panel" id="assistant-panel" hidden>
   <div class="assistant-head">
     <b>Zentra assistant</b>
@@ -413,6 +453,7 @@
   </div>
 </div>
 
-<script src="/static/app.js?v=3"></script>
+<script src="/static/app.js?v=11"></script>
+<script src="/static/tour.js?v=2"></script>
 </body>
 </html>
