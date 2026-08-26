@@ -45,6 +45,21 @@ def test_missing_orgnr_is_review():
     assert v.status == "REVIEW"
 
 
+def test_review_resolves_once_the_orgnr_is_supplied():
+    """REVIEW asks for the missing field; supplying it re-runs the real rule.
+
+    The known account must clear and the fraudulent one must still be held —
+    supplying an orgnr is not a way to clear an invoice.
+    """
+    known = inv(org=None)
+    known.supplier_orgnr = "556677-8899"          # what the owner types in
+    assert verify(known, history=[], transactions=history_31()).status == "CLEAR"
+
+    swapped = inv(org=None, acc="SE9160000000000944411")
+    swapped.supplier_orgnr = "556677-8899"
+    assert verify(swapped, history=[], transactions=history_31()).status == "HOLD"
+
+
 def test_account_formatting_differences_clear():
     # same account with spaces + lowercase must match
     v = verify(inv(acc="se45 5000 0000 0058 3982 5"), history=[], transactions=history_31())

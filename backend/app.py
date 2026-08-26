@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import time
 import uuid
+from datetime import date
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
@@ -28,13 +29,79 @@ _cache: dict = {"briefing": None, "at": 0.0}
 _baskets: list[dict] = []
 
 
+def _ledger_connected() -> bool:
+    """Has the owner connected a bookkeeping system?
+
+    Deliberately a file check, not a live API call: the gate must be instant and
+    must not fail closed because a venue's wifi dropped.
+    """
+    return config.ZG_CONSENT_CACHE.exists()
+
+
+def _bank_connected() -> bool:
+    return config.OP_CONSENT_CACHE.exists()
+
+
+def _unconnected_briefing() -> dict:
+    """The honest empty state. Zentra has nothing to say until it can read
+    something — showing a seeded company to someone who has connected nothing
+    would be the same lie this product exists to catch."""
+    zg, op = _ledger_connected(), _bank_connected()
+    if not zg and not op:
+        msg = ("Nothing is connected yet. Connect your bookkeeping to see what you owe, "
+               "and your bank to prove what was actually paid. I need both: the books "
+               "say what should have happened, the bank says what did.")
+    elif not zg:
+        msg = ("Your bank is connected, so I can see what left the account — but without "
+               "your bookkeeping I have no invoices to check it against. Connect your "
+               "bookkeeping and I'll start screening.")
+    else:
+        msg = ("Your bookkeeping is connected, so I can see what you owe — but without "
+               "your bank I cannot prove which accounts you have actually paid before, "
+               "and that history is the whole fraud check. Connect your bank.")
+    return {
+        "today": config.DEMO_TODAY,
+        "briefing": msg,
+        "briefing_author": "template",
+        "needs_connection": {"ledger": not zg, "bank": not op},
+        "balance": 0.0,
+        "currency": "SEK",
+        "sources": {},
+        "totals": {"due_count": 0, "due_sum": 0, "held_sum": 0,
+                   "today_sum": 0, "later_sum": 0},
+        "validation": {"ok": True, "checks": []},
+        "duplicates": {"count": 0, "total_recoverable": 0, "findings": []},
+        # every key the frontend renderers touch must exist here, or a render
+        # throws and the "connect me" screen never paints at all
+        "payroll": {"employees": [], "held": [], "cleared": [],
+                    "total_monthly": 0, "next_run": None},
+        "notes": {}, "supplier_flags": {},
+        "held": [], "review": [], "cleared": [],
+        "obligations": [],
+        "projection": {"buffer_floor": config.BUFFER_FLOOR_SEK, "inflows": [],
+                       "shortfall": None,
+                       "planned": {"series": [], "min_balance": 0},
+                       "naive": {"series": [], "min_balance": 0}},
+    }
+
+
 @app.get("/api/briefing")
 def get_briefing(refresh: bool = False, fast: bool = False):
     """fast=1 skips the LLM narration (template text) — used after UI actions so
-    re-screening is instant; the Claude-written text returns on a normal load."""
+    re-screening is instant; the Claude-written text returns on a normal load.
+
+    The fast result deliberately does NOT refresh `at`: a template briefing must
+    never satisfy the 600s cache window, or the first UI action of a session
+    would silently downgrade every later load from the agent's own words to the
+    template — the opposite of what this product claims about itself.
+    """
+    # No connection, no data. The ledger and the bank are what this product reads;
+    # with neither attached there is nothing to screen and nothing to claim.
+    if not (_ledger_connected() and _bank_connected()):
+        return _unconnected_briefing()
     if fast:
         _cache["briefing"] = agent.morning_briefing(use_llm=False)
-        _cache["at"] = time.time()
+        _cache["at"] = 0.0
         return _cache["briefing"]
     if refresh or not _cache["briefing"] or time.time() - _cache["at"] > 600:
         _cache["briefing"] = agent.morning_briefing()
@@ -44,10 +111,14 @@ def get_briefing(refresh: bool = False, fast: bool = False):
 
 def _briefing_cached_or_fast() -> dict:
     """Reuse the cached briefing; if absent, build WITHOUT the LLM (fast).
-    Action endpoints must never block a button on a 30s narration call."""
+    Action endpoints must never block a button on a 30s narration call.
+
+    `at` stays 0 for the same reason as the fast path: this template text must
+    not satisfy the cache window and rob the next page load of its narration.
+    """
     if not _cache["briefing"]:
         _cache["briefing"] = agent.morning_briefing(use_llm=False)
-        _cache["at"] = time.time()
+        _cache["at"] = 0.0
     return _cache["briefing"]
 
 
@@ -110,6 +181,13 @@ def stage_basket():
     return basket
 
 
+@app.get("/api/duplicates")
+def get_duplicates():
+    """Invoices paid more than once — money already out the door, recoverable."""
+    b = _briefing_cached_or_fast()
+    return b.get("duplicates") or {"count": 0, "total_recoverable": 0, "findings": []}
+
+
 @app.get("/api/audit")
 def get_audit():
     return {"entries": audit.read()}
@@ -126,11 +204,21 @@ def connections_status():
         if cc.get("id"):
             zg["consent_id"] = cc["id"]
             st = zwapgrid.consent_status(cc["id"])
-            raw = st.get("status")
-            # observed: 0 = created/pending; treat accepted/active strings or >=1 as connected
-            s = str(raw).lower()
-            zg["connected"] = s in ("1", "2", "accepted", "active", "granted")
-            zg["pending"] = not zg["connected"]
+            # The only honest test of "connected" is whether the ledger actually
+            # reads. `status` alone overstates it and `systemSettingsId` stays
+            # null on TEST.1 even when data flows — so probe, and report what
+            # came back rather than inferring from a flag.
+            zg["status"] = st.get("status")
+            zg["system"] = st.get("source") or None
+            try:
+                invs = zwapgrid.get_supplier_invoices(cc["id"])
+                zg["connected"] = True
+                zg["readable"] = {"supplier_invoices": len(invs)}
+            except Exception as probe_err:
+                zg["connected"] = False
+                zg["pending"] = True
+                zg["detail"] = (f"Consent {st.get('status')} but the ledger does not read yet "
+                                f"({str(probe_err)[:60]}) — finish onboarding to pick a system.")
     except Exception as e:
         zg["error"] = str(e)[:150]
 
@@ -164,20 +252,59 @@ def connect_zwapgrid():
 
 
 @app.post("/api/connections/openpayments")
-def connect_openpayments():
+def connect_openpayments(payload: dict | None = None):
+    """Create the consent and drive SEB's decoupled BankID handshake as far as
+    a human can be asked to take over: consent -> authorisation -> method.
+
+    SEB does not return `scaRedirect`; it returns `startAuthorisation` and a
+    list of BankID methods. Stopping at the consent (as this route used to)
+    leaves the UI with nothing to click, which reads as "the bank connection
+    is broken" when in fact the handshake had simply not been started.
+    """
+    method = str((payload or {}).get("method") or "mbid")
     try:
         from . import openpayments
         data = openpayments.create_consent()
         cid = data.get("consentId")
-        links = data.get("_links") or {}
-        sca = (links.get("scaRedirect") or {}).get("href") or (links.get("scaOAuth") or {}).get("href")
-        audit.log("create_consent", "provider=openpayments bank=SEB",
-                  f"consent {str(cid)[:12]}… status={data.get('consentStatus')}")
         st = str(data.get("consentStatus", "")).lower()
-        return {"consent_id": cid, "sca_url": sca, "connected": st == "valid",
-                "status": st or "created"}
+        out: dict = {"consent_id": cid, "status": st or "created",
+                     "connected": st == "valid", "sca_url": None,
+                     "sca_status": None, "psu_message": None,
+                     "methods": data.get("scaMethods") or []}
+        audit.log("create_consent", "provider=openpayments bank=SEB",
+                  f"consent {str(cid)[:12]}… status={st}")
+
+        auth = openpayments.start_authorisation(cid)
+        aid = auth.get("authorisationId")
+        out["authorisation_id"] = aid
+        out["methods"] = auth.get("scaMethods") or out["methods"]
+        audit.log("start_authorisation", f"consent={str(cid)[:12]}…",
+                  f"authorisation {str(aid)[:12]}… — {len(out['methods'])} BankID method(s) offered")
+
+        chosen = openpayments.select_sca_method(cid, aid, method)
+        out["sca_status"] = chosen.get("scaStatus")
+        out["psu_message"] = chosen.get("psuMessage")
+        href = ((chosen.get("_links") or {}).get("scaOAuth") or {}).get("href")
+        if href:
+            out["sca_url"] = openpayments.resolve_sca_oauth(href, str(cid))
+        audit.log("select_sca_method", f"method={method}",
+                  f"scaStatus={out['sca_status']} — PSU approves in their own BankID app")
+        return out
     except Exception as e:
         audit.log("create_consent", "provider=openpayments", f"ERROR {str(e)[:120]}")
+        return JSONResponse({"detail": str(e)[:200]}, status_code=502)
+
+
+@app.get("/api/connections/openpayments/sca")
+def openpayments_sca_status(consent_id: str, authorisation_id: str):
+    """Poll one authorisation — 'finalised' means the PSU approved in their app."""
+    try:
+        from . import openpayments
+        st = openpayments.sca_status(consent_id, authorisation_id)
+        return {"sca_status": st.get("scaStatus"),
+                "psu_message": st.get("psuMessage"),
+                "finalised": str(st.get("scaStatus", "")).lower() == "finalised"}
+    except Exception as e:
         return JSONResponse({"detail": str(e)[:200]}, status_code=502)
 
 
@@ -188,19 +315,56 @@ def add_invoice(payload: dict):
     """Register a new supplier invoice from the UI; it goes through the SAME
     screening pipeline as everything else on the next briefing refresh."""
     import json as _json
-    from .models import Invoice
+    from .models import Invoice, _norm_orgnr
     required = ("supplier_name", "amount", "due_date", "account_id")
-    missing = [k for k in required if not str(payload.get(k, "")).strip()]
+    missing = [k for k in required
+               if payload.get(k) is None or not str(payload.get(k, "")).strip()]
     if missing:
         return JSONResponse({"detail": f"missing: {', '.join(missing)}"}, status_code=422)
+
+    # Validate before anything is written: a row with an unparseable date or a
+    # non-numeric amount is persisted to disk and would then break every later
+    # briefing — a 422 now, or a 500 on every screen until someone SSHes in.
+    try:
+        amount = float(payload["amount"])
+    except (TypeError, ValueError):
+        return JSONResponse({"detail": "amount must be a number"}, status_code=422)
+    if amount <= 0:
+        return JSONResponse({"detail": "amount must be greater than 0"}, status_code=422)
+    for field in ("due_date", "issue_date"):
+        raw = str(payload.get(field) or "").strip()
+        if raw:
+            try:
+                date.fromisoformat(raw)
+            except ValueError:
+                return JSONResponse(
+                    {"detail": f"{field} must be YYYY-MM-DD"}, status_code=422)
     rows = []
     if config.RUNTIME_INVOICES.exists():
         rows = _json.loads(config.RUNTIME_INVOICES.read_text())
+
+    # Refuse the same invoice twice. A product that flags duplicate *payments*
+    # should not itself accept duplicate *entry* — and re-uploading the same
+    # file is exactly how a double payment starts.
+    ref = str(payload.get("reference", "")).strip()
+    orgnr_in = _norm_orgnr(str(payload.get("supplier_orgnr", "")))
+    for r in rows:
+        same_ref = ref and str(r.get("reference", "")).strip().lower() == ref.lower()
+        same_party = _norm_orgnr(str(r.get("supplier_orgnr") or "")) == orgnr_in
+        same_amount = abs(float(r.get("amount", 0)) - amount) < 0.005
+        if same_amount and (same_ref or (same_party and orgnr_in)):
+            return JSONResponse(
+                {"detail": f"Already registered as {r['id']} — invoice "
+                           f"{ref or 'with this amount'} from this supplier is "
+                           f"on the list. Re-registering it is how a double "
+                           f"payment starts.",
+                 "existing_id": r["id"], "duplicate": True},
+                status_code=409)
     inv = Invoice(
         id=f"SI-UI-{uuid.uuid4().hex[:6].upper()}",
         supplier_name=str(payload["supplier_name"]).strip(),
         supplier_orgnr=(str(payload.get("supplier_orgnr", "")).strip() or None),
-        amount=float(payload["amount"]),
+        amount=amount,
         currency="SEK",
         issue_date=str(payload.get("issue_date") or config.DEMO_TODAY),
         due_date=str(payload["due_date"]),
@@ -220,6 +384,34 @@ def add_invoice(payload: dict):
               f"{inv.id} registered — will be screened like any other invoice")
     _cache["briefing"] = None  # force re-screen
     return {"id": inv.id, "screened_on_next_load": True}
+
+
+@app.post("/api/invoices/{invoice_id}/orgnr")
+def set_invoice_orgnr(invoice_id: str, payload: dict):
+    """Owner supplies the organisation number a REVIEW invoice arrived without.
+
+    This is not an override: once the supplier can be identified, the invoice
+    is re-screened by the same rule as everything else, and may well come back
+    HOLD. Filling the gap is the point; skipping the check is not.
+    """
+    import json as _json
+    from .models import _norm_orgnr
+    orgnr = str(payload.get("orgnr", "")).strip()
+    if len(_norm_orgnr(orgnr)) < 10:
+        return JSONResponse(
+            {"detail": "A Swedish organisation number has 10 digits."}, status_code=422)
+    fixes = {}
+    if config.ORGNR_OVERRIDES.exists():
+        try:
+            fixes = _json.loads(config.ORGNR_OVERRIDES.read_text())
+        except Exception:
+            fixes = {}
+    fixes[invoice_id] = orgnr
+    config.ORGNR_OVERRIDES.write_text(_json.dumps(fixes, indent=1))
+    audit.log("supply_orgnr", f"invoice={invoice_id} orgnr={orgnr}",
+              "owner supplied the missing organisation number — invoice re-screened by the normal rule")
+    _cache["briefing"] = None
+    return {"ok": True, "invoice_id": invoice_id, "orgnr": orgnr}
 
 
 @app.post("/api/trust")
@@ -346,14 +538,27 @@ def validate():
 
 
 @app.post("/api/reset")
-def reset():
-    """Re-arm the demo scenario. Keeps the audit log (append-only) and records the reset."""
+def reset(disconnect: bool = False):
+    """Re-arm the demo scenario. Keeps the audit log (append-only) and records the reset.
+
+    `disconnect=1` also drops the cached bank and bookkeeping consents, so the
+    product returns to its true first-run state: nothing connected, nothing to
+    show, until the owner connects them again.
+    """
     _cache["briefing"] = None
     _baskets.clear()
-    for p in (config.RUNTIME_INVOICES, config.TRUSTED_ACCOUNTS):
+    if disconnect:
+        for p in (config.ZG_CONSENT_CACHE, config.OP_CONSENT_CACHE):
+            if p.exists():
+                p.unlink()
+        audit.log("demo_reset", "connections cleared",
+                  "bank + bookkeeping consents dropped; product back to first-run state")
+    for p in (config.RUNTIME_INVOICES, config.TRUSTED_ACCOUNTS,
+              config.ORGNR_OVERRIDES, config.SUPPLIER_FLAGS, config.INVOICE_NOTES):
         if p.exists():
             p.unlink()
-    audit.log("demo_reset", "runtime invoices + trusted accounts cleared",
+    audit.log("demo_reset", "runtime invoices, trusted accounts, orgnr overrides, "
+                            "supplier flags + notes cleared",
               "scenario re-armed; audit trail preserved")
     return {"ok": True}
 

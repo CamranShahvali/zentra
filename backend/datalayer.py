@@ -110,6 +110,20 @@ def get_world(mode: str | None = None) -> World:
                 w.sources["runtime_invoices"] = f"{len(extra)} added via UI"
         except Exception as e:
             w.sources["runtime_invoices_error"] = str(e)[:150]
+
+    # orgnr overlay: an invoice that arrives without an organisation number is
+    # unverifiable, not suspicious — REVIEW is a request for the missing field,
+    # so the owner can supply it and the real rule then runs unchanged.
+    if config.ORGNR_OVERRIDES.exists():
+        try:
+            fixes = json.loads(config.ORGNR_OVERRIDES.read_text())
+            for inv in w.invoices:
+                if not inv.supplier_orgnr and fixes.get(inv.id):
+                    inv.supplier_orgnr = fixes[inv.id]
+            if fixes:
+                w.sources["orgnr_overrides"] = f"{len(fixes)} supplied by owner"
+        except Exception as e:
+            w.sources["orgnr_overrides_error"] = str(e)[:150]
     return w
 
 

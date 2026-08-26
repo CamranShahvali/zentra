@@ -22,10 +22,18 @@ def log(tool: str, args_summary: str, result_summary: str) -> None:
 
 
 def read(limit: int = 200) -> list[dict]:
+    """Most recent first — the file is append-only, but the reader wants the
+    action that just happened at the top, not 200 entries of history."""
     if not config.AUDIT_LOG.exists():
         return []
     lines = config.AUDIT_LOG.read_text().strip().splitlines()
-    return [json.loads(l) for l in lines[-limit:]]
+    out = []
+    for l in reversed(lines[-limit:]):
+        try:
+            out.append(json.loads(l))
+        except ValueError:
+            continue          # a torn final line must not blank the whole log
+    return out
 
 
 def clear() -> None:
