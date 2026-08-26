@@ -7,3 +7,14 @@ __pycache__/
 audit.jsonl
 *.log
 node_modules/
+
+# runtime state — never commit. A stale .op_consent.json was deployed once and
+# made a working bank connection look broken for hours.
+.op_consent.json
+.runtime_invoices.json
+.trusted_accounts.json
+.supplier_flags.json
+.invoice_notes.json
+.orgnr_overrides.json
+.uploads/
+.pytest_cache/
