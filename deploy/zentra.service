@@ -7,7 +7,9 @@ Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/zentra
 Environment="DATA_MODE=seed"
-Environment="LLM_BACKEND=none"
+# Token + LLM_BACKEND live in /home/ubuntu/zentra.env (mode 0600, NOT in git).
+EnvironmentFile=/home/ubuntu/zentra.env
+Environment="CLAUDE_CONFIG_DIR=/home/ubuntu/.claude"
 ExecStart=/home/ubuntu/zentra/.venv/bin/uvicorn backend.app:app --host 127.0.0.1 --port 8010
 Restart=always
 RestartSec=3
