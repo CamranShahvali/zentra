@@ -144,6 +144,22 @@ def gen_transactions():
             "creditor_name": STADGROSSISTEN[0], "creditor_account": REAL_ACC,
             "creditor_orgnr": STADGROSSISTEN[1], "source": "seed",
         })
+
+    # A real double payment, six days apart: a one-off tyre-and-service invoice
+    # (deliberately NOT the 7 300 monthly lease, so it cannot be confused with
+    # the standing charge). The supplier sent a reminder for an invoice that had
+    # already been paid, and it was paid again. Both debits are legitimate,
+    # authorised and correctly booked — which is exactly why nobody notices.
+    # Only the ledger/bank join finds it.
+    dup_name, dup_orgnr, dup_acc = (
+        "Fordonsleasing Stockholm AB", "556520-1188", "SE6980000000123400112233")
+    for k, day in enumerate(("2026-07-08", "2026-07-14")):
+        tx.append({
+            "id": f"TX-DUP-{k+1:02d}", "booking_date": day,
+            "amount": -12400.0, "currency": "SEK",
+            "creditor_name": dup_name, "creditor_account": dup_acc,
+            "creditor_orgnr": dup_orgnr, "source": "seed",
+        })
     return tx
 
 

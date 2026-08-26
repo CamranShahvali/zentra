@@ -700,6 +700,26 @@
   "source": "seed"
  },
  {
+  "id": "TX-DUP-01",
+  "booking_date": "2026-07-08",
+  "amount": -12400.0,
+  "currency": "SEK",
+  "creditor_name": "Fordonsleasing Stockholm AB",
+  "creditor_account": "SE6980000000123400112233",
+  "creditor_orgnr": "556520-1188",
+  "source": "seed"
+ },
+ {
+  "id": "TX-DUP-02",
+  "booking_date": "2026-07-14",
+  "amount": -12400.0,
+  "currency": "SEK",
+  "creditor_name": "Fordonsleasing Stockholm AB",
+  "creditor_account": "SE6980000000123400112233",
+  "creditor_orgnr": "556520-1188",
+  "source": "seed"
+ },
+ {
   "id": "TX-SAL-0001",
   "booking_date": "2025-02-25",
   "amount": -35000.0,
