@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import uuid
 import subprocess
 from datetime import date
 
@@ -92,7 +93,7 @@ def month_report_text(report: dict) -> str:
     if exe and config.LLM_BACKEND == "claude-code":
         try:
             p = subprocess.run(
-                [exe, "-p", "--model", "sonnet", "--max-turns", "1"],
+                config.llm_argv(exe),
                 input=("Write a monthly financial statement for a small-business owner "
                        "from this JSON. Plain English, no jargon, max 150 words. Cover: "
                        "money out, biggest costs, what is still unpaid and why (held/"
@@ -132,38 +133,74 @@ No prose. If a field is absent use null. INVOICE TEXT:
 """
 
 
+def _ocr(path) -> str:
+    """Read text off an image (or a scanned PDF) with tesseract.
+
+    Swedish + English together: these invoices are Swedish, but amounts, IBANs
+    and dates are latin either way, and tesseract handles a combined model fine.
+    Returns "" on any failure — the caller already degrades to manual entry.
+    """
+    import shutil as _sh
+    import subprocess as _sp
+    if not _sh.which("tesseract"):
+        return ""
+    for langs in ("swe+eng", "eng"):
+        try:
+            r = _sp.run(["tesseract", str(path), "stdout", "-l", langs],
+                        capture_output=True, text=True, timeout=60)
+            if r.returncode == 0 and r.stdout.strip():
+                return r.stdout
+        except Exception:
+            continue
+    return ""
+
+
 def extract_invoice(file_bytes: bytes, filename: str) -> dict:
     """Extract invoice fields from an uploaded file. Text-first; LLM for parsing.
     Returns {fields, confidence, method}. NEVER auto-registers — the user reviews."""
     config.UPLOAD_DIR.mkdir(exist_ok=True)
     safe = "".join(c for c in filename if c.isalnum() or c in "._-")[:80]
+    # a name made only of stripped characters collapses to "" and the path would
+    # then resolve to the upload DIRECTORY itself -> IsADirectoryError -> 500
+    safe = safe or f"upload-{uuid.uuid4().hex[:8]}.bin"
     path = config.UPLOAD_DIR / safe
     path.write_bytes(file_bytes)
 
+    low = filename.lower()
     text = ""
-    if filename.lower().endswith(".pdf"):
+    source = "text"
+    if low.endswith(".pdf"):
         try:
             import subprocess as sp
             r = sp.run(["pdftotext", str(path), "-"], capture_output=True, text=True, timeout=30)
             text = r.stdout if r.returncode == 0 else ""
         except Exception:
             text = ""
-    elif filename.lower().endswith((".txt", ".text")):
+        # A PDF that is really a scan has no text layer — fall through to OCR
+        # rather than telling the owner to type it all in again.
+        if not text.strip():
+            text, source = _ocr(path), "ocr"
+    elif low.endswith((".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp")):
+        # Photographed or screenshotted invoices: OCR to text, then the same
+        # field extraction as everything else. Swedish first, English as a
+        # fallback, because these invoices are usually Swedish.
+        text, source = _ocr(path), "ocr"
+    elif low.endswith((".txt", ".text")):
         text = file_bytes.decode(errors="replace")
 
     if not text.strip():
-        audit.log("extract_invoice", filename, "no text layer — manual entry required")
+        audit.log("extract_invoice", filename, "no readable text — manual entry required")
         return {"fields": {}, "confidence": 0.0, "method": "none",
-                "detail": "Could not read text from this file (scanned image?). "
-                          "Fill the form manually — the screening is identical either way."}
+                "detail": "Could not read any text from this file. Fill the form "
+                          "manually — the screening is identical either way."}
 
     exe = shutil.which("claude")
     if exe and config.LLM_BACKEND == "claude-code":
         try:
             p = subprocess.run(
-                [exe, "-p", "--model", "sonnet", "--max-turns", "1"],
+                config.llm_argv(exe),
                 input=EXTRACT_PROMPT + text[:6000],
-                capture_output=True, text=True, timeout=60,
+                capture_output=True, text=True, timeout=config.LLM_TIMEOUT,
             )
             raw = p.stdout.strip()
             start, end = raw.find("{"), raw.rfind("}")
@@ -173,13 +210,13 @@ def extract_invoice(file_bytes: bytes, filename: str) -> dict:
                 audit.log("extract_invoice", filename,
                           f"AI extracted {filled}/8 fields — pending human review")
                 return {"fields": fields, "confidence": round(filled / 8, 2),
-                        "method": "claude", "detail": "Review before registering — "
+                        "method": ("claude+ocr" if source == "ocr" else "claude"), "detail": "Review before registering — "
                         "extraction is a draft, screening is the authority."}
         except Exception:
             pass
 
     audit.log("extract_invoice", filename, "text read; AI parse unavailable")
-    return {"fields": {}, "confidence": 0.0, "method": "text-only",
+    return {"fields": {}, "confidence": 0.0, "method": ("ocr-only" if source == "ocr" else "text-only"),
             "detail": "File read but automatic parsing unavailable — fill manually."}
 
 
@@ -223,10 +260,10 @@ def assistant_reply(question: str, briefing: dict) -> dict:
     if exe and config.LLM_BACKEND == "claude-code":
         try:
             p = subprocess.run(
-                [exe, "-p", "--model", "sonnet", "--max-turns", "1"],
+                config.llm_argv(exe),
                 input=f"{ASSISTANT_SYSTEM}\n\nCONTEXT:\n{json.dumps(ctx, ensure_ascii=False)}"
                       f"\n\nUSER QUESTION: {question[:500]}\n\nAnswer:",
-                capture_output=True, text=True, timeout=60,
+                capture_output=True, text=True, timeout=config.LLM_TIMEOUT,
             )
             t = p.stdout.strip()
             if p.returncode == 0 and 0 < len(t) < 1500:

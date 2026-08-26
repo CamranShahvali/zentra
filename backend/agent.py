@@ -13,7 +13,7 @@ import shutil
 import subprocess
 from datetime import date
 
-from . import audit, config, datalayer, fraud, payroll, planner
+from . import audit, config, datalayer, duplicates, fraud, payroll, planner
 
 
 def run_pipeline(mode: str | None = None) -> dict:
@@ -82,6 +82,16 @@ def run_pipeline(mode: str | None = None) -> dict:
         for e, pv in zip(w.employees, payroll_verdicts) if pv.status == "HOLD"
     ]
 
+    # duplicate payments — the same ledger/bank join, asked the other way round:
+    # not "was this account ever paid?" but "was this invoice paid twice?"
+    dup = duplicates.summarise(duplicates.find_duplicate_payments(
+        w.transactions, w.history_invoices,
+        exclude_accounts=duplicates.salary_accounts(w.employees),
+    ))
+    audit.log("find_duplicate_payments",
+              f"{len(w.transactions)} bank payments scanned",
+              f"{dup['count']} duplicate group(s), {dup['total_recoverable']:.0f} SEK recoverable")
+
     inv_by_id = {i.id: i for i in w.invoices}
     pay_today = [p for p in items if p.pay_date == config.DEMO_TODAY]
     pay_later = [p for p in items if p.pay_date != config.DEMO_TODAY]
@@ -100,6 +110,7 @@ def run_pipeline(mode: str | None = None) -> dict:
         "inv_by_id": inv_by_id,
         "payroll_verdicts": payroll_verdicts,
         "payroll_held": payroll_held,
+        "duplicates": dup,
         "totals": {
             "due_count": len(w.invoices),
             "due_sum": sum(i.amount for i in w.invoices),
@@ -145,6 +156,10 @@ def _facts_for_llm(r: dict) -> str:
         f"lowest projected balance {proj['planned']['min_balance']:.0f} SEK.",
         (f"Key expected inflow: {inflow['customer']} {inflow['amount']:.0f} SEK around {inflow['date']} "
          f"(historically pays {inflow['avg_lateness_days']:.0f} days late)." if inflow else ""),
+        (f"Duplicate payments found: {r['duplicates']['count']} — "
+         f"{r['duplicates']['total_recoverable']:.0f} SEK paid twice and recoverable. "
+         + "; ".join(d['reason'] for d in r['duplicates']['findings'][:2])
+         if r["duplicates"]["count"] else ""),
         "Payment plan:",
         *plan_lines,
     ])
@@ -172,9 +187,9 @@ def briefing_llm(facts: str) -> str | None:
         return None
     try:
         proc = subprocess.run(
-            [exe, "-p", "--model", "sonnet", "--max-turns", "1"],
+            config.llm_argv(exe),
             input=f"{SYSTEM_PROMPT}\n\nFACTS:\n{facts}\n\nWrite the briefing now.",
-            capture_output=True, text=True, timeout=60,
+            capture_output=True, text=True, timeout=config.LLM_TIMEOUT,
         )
         text = proc.stdout.strip()
         if proc.returncode == 0 and 200 < len(text) < 2000:
@@ -240,6 +255,7 @@ def morning_briefing(mode: str | None = None, use_llm: bool = True) -> dict:
         "sources": w.sources,
         "totals": r["totals"],
         "validation": datalayer.validate_world(w),
+        "duplicates": r["duplicates"],
         "payroll": {
             "employees": [
                 {**e.to_dict(),
