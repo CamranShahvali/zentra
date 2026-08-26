@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import time
 import uuid
+from urllib.parse import quote
 
 import httpx
 
@@ -108,10 +109,14 @@ def create_consent(valid_until: str = "2026-09-30") -> dict:
 
 
 def consent_status(consent_id: str) -> dict:
+    # Full consent headers, not a minimal set: the bank rejects a status read
+    # that omits the PSU-Corporate-ID the consent was created with
+    # ("The same Corporate-ID must be sent when referenced resource was
+    # created with one") — which surfaced as a 400 on the Connections screen.
     tok = get_token()
     r = httpx.get(
         f"{config.OP_API_HOST}/psd2/consent/v1/consents/{consent_id}/status",
-        headers=_req_headers(tok, {"X-BicFi": config.OP_BANK_BIC, "PSU-ID": config.OP_PSU_ID}),
+        headers=_consent_headers(tok),
         timeout=30.0,
     )
     r.raise_for_status()
@@ -122,6 +127,55 @@ def cached_consent() -> dict | None:
     if config.OP_CONSENT_CACHE.exists():
         return json.loads(config.OP_CONSENT_CACHE.read_text())
     return None
+
+
+# --- SCA: SEB answers the consent with `startAuthorisation` + `scaMethods`,
+# not `scaRedirect`. That is the Berlin Group *decoupled* flow — the PSU
+# approves in their BankID app while we poll. Three steps, then status.
+
+def start_authorisation(consent_id: str) -> dict:
+    """POST the consent's startAuthorisation link -> authorisationId + scaMethods."""
+    tok = get_token()
+    r = httpx.post(
+        f"{config.OP_API_HOST}/psd2/consent/v1/consents/{consent_id}/authorisations",
+        headers=_consent_headers(tok), json={}, timeout=30.0,
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+def select_sca_method(consent_id: str, authorisation_id: str,
+                      method_id: str = "mbid") -> dict:
+    """Choose a BankID variant -> scaStatus 'started' + the message to show the PSU."""
+    tok = get_token()
+    r = httpx.put(
+        f"{config.OP_API_HOST}/psd2/consent/v1/consents/{consent_id}"
+        f"/authorisations/{authorisation_id}",
+        headers=_consent_headers(tok), json={"authenticationMethodId": method_id},
+        timeout=30.0,
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+def sca_status(consent_id: str, authorisation_id: str) -> dict:
+    """Poll one authorisation. 'finalised' means the PSU approved in their app."""
+    tok = get_token()
+    r = httpx.get(
+        f"{config.OP_API_HOST}/psd2/consent/v1/consents/{consent_id}"
+        f"/authorisations/{authorisation_id}",
+        headers=_consent_headers(tok), timeout=30.0,
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+def resolve_sca_oauth(href: str, consent_id: str) -> str:
+    """The scaOAuth href ships with [CLIENT_ID]/[TPP_REDIRECT_URI]/[TPP_STATE]
+    placeholders — fill them so the link is actually clickable."""
+    return (href.replace("[CLIENT_ID]", config.OP_CLIENT_ID)
+                .replace("[TPP_REDIRECT_URI]", quote(config.OP_REDIRECT_URI, safe=""))
+                .replace("[TPP_STATE]", consent_id[:8]))
 
 
 def _ais_headers(tok: str, consent_id: str) -> dict:
