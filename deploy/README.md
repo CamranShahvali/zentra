@@ -13,10 +13,10 @@
 ## Access
 
 ```bash
-ssh -i ~/ips-sol-pentaguard-main/stc.pem ubuntu@192.121.133.232
+ssh <your-key> <your-host>
 ```
 
-Key: `stc.pem` (the `id_ed25519_stc` key is NOT the VPS key — it's for git.idp).
+Key: the VPS keypair (kept outside this repo).
 Host keys were rotated when the VM was rebuilt; local `known_hosts` updated 2026-08-25
 (backup at `~/.ssh/known_hosts.bak.*`).
 
@@ -32,7 +32,7 @@ curl -s -X POST localhost/api/reset # re-arm the demo scenario
 ## Deploy an update
 
 ```bash
-ssh -i ~/ips-sol-pentaguard-main/stc.pem ubuntu@192.121.133.232 \
+ssh <your-key> <your-host> \
   'cd ~/zentra && git pull -q && .venv/bin/pip install -q -r requirements.txt \
    && .venv/bin/python -m backend.seed.generate && sudo systemctl restart zentra'
 ```

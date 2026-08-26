@@ -282,5 +282,5 @@ curl -s http://192.121.133.232/api/briefing?fast=1 | python3 -c "import json,sys
 curl -X POST "http://192.121.133.232/api/reset?disconnect=1"
 
 # IF THE SERVER MISBEHAVES
-ssh -i ~/ips-sol-pentaguard-main/stc.pem ubuntu@192.121.133.232 "sudo systemctl restart zentra"
+ssh <your-key> <your-host> "sudo systemctl restart zentra"
 ```
